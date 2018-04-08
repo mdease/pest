@@ -55,6 +55,7 @@
 //! [`pest_derive` crate](https://docs.rs/pest_derive/#Grammar).
 
 #![doc(html_root_url = "https://docs.rs/pest")]
+#![feature(stdsimd)]
 
 pub use error::Error;
 pub use parser::Parser;

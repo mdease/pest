@@ -533,10 +533,20 @@ fn generate_expr_atomic(expr: Expr) -> Tokens {
             }
         }
         Expr::Skip(strings) => {
-            quote! {
-                let strings = [#(#strings),*];
+            if strings.iter().all(|s| s.len() == 1) {
+                let bytes: Vec<_> = strings.iter().map(|s| s.as_bytes()[0]).collect();
 
-                state.skip_until(&strings)
+                quote! {
+                    let bytes = [#(#bytes),*];
+
+                    state.skip_until_bytes(&bytes)
+                }
+            } else {
+                quote! {
+                    let strings = [#(#strings),*];
+
+                    state.skip_until(&strings)
+                }
             }
         }
         Expr::Push(expr) => {
@@ -705,9 +715,9 @@ mod tests {
         assert_eq!(
             generate_expr_atomic(expr),
             quote! {
-                let strings = ["a", "b"];
+                let bytes = [97u8, 98u8];
 
-                state.skip_until(&strings)
+                state.skip_until_bytes(&bytes)
             }
         );
     }
