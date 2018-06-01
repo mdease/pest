@@ -34,13 +34,13 @@ impl<'i> Position<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let start = Position::from_start("");
+    /// let start = Position::from_start("".as_bytes());
     /// assert_eq!(start.pos(), 0);
     /// ```
     #[inline]
-    pub fn from_start(input: &'i str) -> Position<'i> {
+    pub fn from_start(input: &'i [u8]) -> Position<'i> {
         // Position 0 is always safe because it's always a valid UTF-8 border.
-        unsafe { new(input.as_bytes(), 0) }
+        unsafe { new(input, 0) }
     }
 
     /// Returns the current byte position as a `usize`.
@@ -49,7 +49,7 @@ impl<'i> Position<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut start = Position::from_start(input);
     ///
     /// assert_eq!(start.pos(), 0);
@@ -69,7 +69,7 @@ impl<'i> Position<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let start = Position::from_start(input);
     /// let span = start.span(&start.clone());
     ///
@@ -96,7 +96,7 @@ impl<'i> Position<'i> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "\na";
+    /// let input = "\na".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.match_string("\na");
     /// assert!(result.is_ok());
@@ -158,7 +158,7 @@ impl<'i> Position<'i> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "\na";
+    /// let input = "\na".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.match_string("\na");
     /// assert!(result.is_ok());
@@ -495,7 +495,7 @@ mod tests {
 
     #[test]
     fn skip_until() {
-        let input = "ab ac";
+        let input = "ab ac".as_bytes();
         let pos = Position::from_start(input);
 
         let mut test_pos = pos.clone();

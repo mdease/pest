@@ -32,7 +32,7 @@ enum Rule {
 struct CalculatorParser;
 
 impl Parser<Rule> for CalculatorParser {
-    fn parse(rule: Rule, input: &str) -> Result<Pairs<Rule>, Error<Rule>> {
+    fn parse(rule: Rule, input: &[u8]) -> Result<Pairs<Rule>, Error<Rule>> {
         fn expression(state: Box<ParserState<Rule>>) -> ParseResult<Box<ParserState<Rule>>> {
             state.rule(Rule::expression, |s| {
                 s.sequence(|s| {
@@ -139,7 +139,7 @@ fn consume<'i>(pair: Pair<'i, Rule>, climber: &PrecClimber<Rule>) -> i32 {
 fn number() {
     parses_to! {
         parser: CalculatorParser,
-        input: "-12",
+        input: "-12".as_bytes(),
         rule: Rule::expression,
         tokens: [
             expression(0, 3, [
@@ -153,7 +153,7 @@ fn number() {
 fn parens() {
     parses_to! {
         parser: CalculatorParser,
-        input: "((-12))",
+        input: "((-12))".as_bytes(),
         rule: Rule::expression,
         tokens: [
             expression(0, 7, [
@@ -171,7 +171,7 @@ fn parens() {
 fn expression() {
     parses_to! {
         parser: CalculatorParser,
-        input: "-12+3*(4-9)^7^2",
+        input: "-12+3*(4-9)^7^2".as_bytes(),
         rule: Rule::expression,
         tokens: [
             expression(0, 15, [
@@ -202,6 +202,6 @@ fn prec_climb() {
         Operator::new(Rule::power, Assoc::Right),
     ]);
 
-    let pairs = CalculatorParser::parse(Rule::expression, "-12+3*(4-9)^3^2/9%7381");
+    let pairs = CalculatorParser::parse(Rule::expression, "-12+3*(4-9)^3^2/9%7381".as_bytes());
     assert_eq!(-1_525, consume(pairs.unwrap().next().unwrap(), &climber));
 }

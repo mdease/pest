@@ -54,7 +54,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "";
+    /// let input = "".as_bytes();
     /// let pair = pest::state(input, |state| {
     ///     // generating Token pair with Rule::a ...
     /// #     state.rule(Rule::a, |s| Ok(s))
@@ -83,7 +83,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     ///     ab
     /// }
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let pair = pest::state(input, |state| {
     ///     // generating Token pair with Rule::ab ...
     /// #     state.rule(Rule::ab, |s| s.match_string("ab"))
@@ -115,7 +115,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     ///     ab
     /// }
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let pair = pest::state(input, |state| {
     ///     // generating Token pair with Rule::ab ...
     /// #     state.rule(Rule::ab, |s| s.match_string("ab"))
@@ -142,7 +142,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     ///     ab
     /// }
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let pair = pest::state(input, |state| {
     ///     // generating Token pair with Rule::ab ...
     /// #     state.rule(Rule::ab, |s| s.match_string("ab"))
@@ -172,7 +172,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "";
+    /// let input = "".as_bytes();
     /// let pair = pest::state(input, |state| {
     ///     // generating Token pair with Rule::a ...
     /// #     state.rule(Rule::a, |s| Ok(s))
@@ -200,7 +200,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "";
+    /// let input = "".as_bytes();
     /// let pair = pest::state(input, |state| {
     ///     // generating Token pair with Rule::a ...
     /// #     state.rule(Rule::a, |s| Ok(s))
@@ -293,7 +293,7 @@ mod tests {
 
     #[test]
     fn pair_into_inner() {
-        let pair = AbcParser::parse(Rule::a, "abcde").unwrap().next().unwrap(); // the tokens a(b())
+        let pair = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap().next().unwrap(); // the tokens a(b())
 
         let pairs = pair.into_inner(); // the tokens b()
 

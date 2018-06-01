@@ -55,6 +55,7 @@ impl<'i, R: RuleType> Tokens<'i, R> {
                 Token::Start {
                     rule,
                     // QueueableTokens are safely created.
+                    // TODO here
                     pos: unsafe { position::new(self.input, input_pos) }
                 }
             }
@@ -64,6 +65,7 @@ impl<'i, R: RuleType> Tokens<'i, R> {
                 Token::End {
                     rule,
                     // QueueableTokens are safely created.
+                    // TODO here
                     pos: unsafe { position::new(self.input, input_pos) }
                 }
             }
@@ -115,7 +117,7 @@ mod tests {
 
     #[test]
     fn double_ended_iter_for_tokens() {
-        let pairs = AbcParser::parse(Rule::a, "abcde").unwrap();
+        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
         let mut tokens = pairs.clone().tokens().collect::<Vec<Token<Rule>>>();
         tokens.reverse();
         let reverse_tokens = pairs.tokens().rev().collect::<Vec<Token<Rule>>>();

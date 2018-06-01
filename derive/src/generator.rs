@@ -41,7 +41,7 @@ pub fn generate(
         impl #impl_generics ::pest::Parser<Rule> for #name #ty_generics #where_clause {
             fn parse<'i>(
                 rule: Rule,
-                input: &'i str
+                input: &'i [u8]
             ) -> ::std::result::Result<
                 ::pest::iterators::Pairs<'i, Rule>,
                 ::pest::error::Error<Rule>
@@ -872,7 +872,7 @@ mod tests {
             impl ::pest::Parser<Rule> for MyParser {
                 fn parse<'i>(
                     rule: Rule,
-                    input: &'i str
+                    input: &'i [u8]
                 ) -> ::std::result::Result<
                     ::pest::iterators::Pairs<'i, Rule>,
                     ::pest::error::Error<Rule>

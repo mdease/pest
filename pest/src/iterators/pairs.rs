@@ -57,7 +57,7 @@ impl<'i, R: RuleType> Pairs<'i, R> {
     ///     b
     /// }
     ///
-    /// let input = "";
+    /// let input = "".as_bytes();
     /// let pairs = pest::state(input, |state| {
     ///     // generating nested Token pair with Rule::b inside Rule::a
     /// #     state.rule(Rule::a, |state| {
@@ -86,7 +86,7 @@ impl<'i, R: RuleType> Pairs<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "";
+    /// let input = "".as_bytes();
     /// let pairs = pest::state(input, |state| {
     ///     // generating Token pair with Rule::a ...
     /// #     state.rule(Rule::a, |s| Ok(s))
@@ -193,7 +193,7 @@ mod tests {
 
     #[test]
     fn pairs_debug() {
-        let pairs = AbcParser::parse(Rule::a, "abcde").unwrap();
+        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
 
         assert_eq!(
             format!("{:?}", pairs),
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn pairs_display() {
-        let pairs = AbcParser::parse(Rule::a, "abcde").unwrap();
+        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
 
         assert_eq!(
             format!("{}", pairs),
@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn iter_for_pairs() {
-        let pairs = AbcParser::parse(Rule::a, "abcde").unwrap();
+        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
         assert_eq!(
             pairs.map(|p| p.as_rule()).collect::<Vec<Rule>>(),
             vec![Rule::a, Rule::c]
@@ -228,7 +228,7 @@ mod tests {
 
     #[test]
     fn double_ended_iter_for_pairs() {
-        let pairs = AbcParser::parse(Rule::a, "abcde").unwrap();
+        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
         assert_eq!(
             pairs.rev().map(|p| p.as_rule()).collect::<Vec<Rule>>(),
             vec![Rule::c, Rule::a]

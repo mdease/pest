@@ -33,7 +33,7 @@ impl Vm {
     pub fn parse<'a, 'i>(
         &'a self,
         rule: &'a str,
-        input: &'i str
+        input: &'i [u8]
     ) -> Result<Pairs<'i, &str>, Error<&str>> {
         pest::state(input, |state| self.parse_rule(rule, state))
     }

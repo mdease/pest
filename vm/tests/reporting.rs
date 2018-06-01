@@ -28,7 +28,7 @@ fn vm() -> Vm {
 fn choices() {
     fails_with! {
         parser: vm(),
-        input: "x",
+        input: "x".as_bytes(),
         rule: "choices",
         positives: vec!["a", "b", "c"],
         negatives: vec![],
@@ -40,7 +40,7 @@ fn choices() {
 fn choices_no_progress() {
     fails_with! {
         parser: vm(),
-        input: "x",
+        input: "x".as_bytes(),
         rule: "choices_no_progress",
         positives: vec!["choices_no_progress"],
         negatives: vec![],
@@ -52,7 +52,7 @@ fn choices_no_progress() {
 fn choices_a_progress() {
     fails_with! {
         parser: vm(),
-        input: "a",
+        input: "a".as_bytes(),
         rule: "choices_a_progress",
         positives: vec!["a"],
         negatives: vec![],
@@ -64,7 +64,7 @@ fn choices_a_progress() {
 fn choices_b_progress() {
     fails_with! {
         parser: vm(),
-        input: "b",
+        input: "b".as_bytes(),
         rule: "choices_b_progress",
         positives: vec!["b"],
         negatives: vec![],
@@ -76,7 +76,7 @@ fn choices_b_progress() {
 fn nested() {
     fails_with! {
         parser: vm(),
-        input: "x",
+        input: "x".as_bytes(),
         rule: "level1",
         positives: vec!["a", "b", "c"],
         negatives: vec![],
@@ -88,7 +88,7 @@ fn nested() {
 fn negative() {
     fails_with! {
         parser: vm(),
-        input: "x",
+        input: "x".as_bytes(),
         rule: "negative",
         positives: vec![],
         negatives: vec!["d"],
@@ -100,7 +100,7 @@ fn negative() {
 fn negative_match() {
     fails_with! {
         parser: vm(),
-        input: "x",
+        input: "x".as_bytes(),
         rule: "negative_match",
         positives: vec!["b"],
         negatives: vec![],
@@ -112,7 +112,7 @@ fn negative_match() {
 fn mixed() {
     fails_with! {
         parser: vm(),
-        input: "x",
+        input: "x".as_bytes(),
         rule: "mixed",
         positives: vec!["a"],
         negatives: vec!["d"],
@@ -124,7 +124,7 @@ fn mixed() {
 fn mixed_progress() {
     fails_with! {
         parser: vm(),
-        input: "b",
+        input: "b".as_bytes(),
         rule: "mixed_progress",
         positives: vec!["a"],
         negatives: vec![],

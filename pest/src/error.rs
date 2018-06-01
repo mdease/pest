@@ -102,7 +102,7 @@ impl<R: RuleType> Error<R> {
     /// #     open_paren,
     /// #     closed_paren
     /// # }
-    /// # let input = "";
+    /// # let input = "".as_bytes();
     /// # let pos = Position::from_start(input);
     /// Error::new_from_pos(
     ///     ErrorVariant::ParsingError {

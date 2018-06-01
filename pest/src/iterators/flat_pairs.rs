@@ -52,7 +52,7 @@ impl<'i, R: RuleType> FlatPairs<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "";
+    /// let input = "".as_bytes();
     /// let pairs = pest::state(input, |state| {
     ///     // generating Token pair with Rule::a ...
     /// #     state.rule(Rule::a, |s| Ok(s))
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn iter_for_flat_pairs() {
-        let pairs = AbcParser::parse(Rule::a, "abcde").unwrap();
+        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
 
         assert_eq!(
             pairs.flatten().map(|p| p.as_rule()).collect::<Vec<Rule>>(),
@@ -156,7 +156,7 @@ mod tests {
 
     #[test]
     fn double_ended_iter_for_flat_pairs() {
-        let pairs = AbcParser::parse(Rule::a, "abcde").unwrap();
+        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
         assert_eq!(
             pairs
                 .flatten()

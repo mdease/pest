@@ -38,7 +38,7 @@ enum Rule {
 struct JsonParser;
 
 impl Parser<Rule> for JsonParser {
-    fn parse(rule: Rule, input: &str) -> Result<Pairs<Rule>, Error<Rule>> {
+    fn parse(rule: Rule, input: &[u8]) -> Result<Pairs<Rule>, Error<Rule>> {
         fn json(state: Box<ParserState<Rule>>) -> ParseResult<Box<ParserState<Rule>>> {
             value(state)
         }
@@ -297,7 +297,7 @@ fn consume(pair: Pair<Rule>) -> Json {
 fn null() {
     parses_to! {
         parser: JsonParser,
-        input: "null",
+        input: "null".as_bytes(),
         rule: Rule::null,
         tokens: [
             null(0, 4)
@@ -309,7 +309,7 @@ fn null() {
 fn bool() {
     parses_to! {
         parser: JsonParser,
-        input: "false",
+        input: "false".as_bytes(),
         rule: Rule::bool,
         tokens: [
             bool(0, 5)
@@ -321,7 +321,7 @@ fn bool() {
 fn number_zero() {
     parses_to! {
         parser: JsonParser,
-        input: "0",
+        input: "0".as_bytes(),
         rule: Rule::number,
         tokens: [
             number(0, 1)
@@ -333,7 +333,7 @@ fn number_zero() {
 fn float() {
     parses_to! {
         parser: JsonParser,
-        input: "100.001",
+        input: "100.001".as_bytes(),
         rule: Rule::number,
         tokens: [
             number(0, 7)
@@ -345,7 +345,7 @@ fn float() {
 fn float_with_exp() {
     parses_to! {
         parser: JsonParser,
-        input: "100.001E+100",
+        input: "100.001E+100".as_bytes(),
         rule: Rule::number,
         tokens: [
             number(0, 12)
@@ -357,7 +357,7 @@ fn float_with_exp() {
 fn number_minus_zero() {
     parses_to! {
         parser: JsonParser,
-        input: "-0",
+        input: "-0".as_bytes(),
         rule: Rule::number,
         tokens: [
             number(0, 2)
@@ -369,7 +369,7 @@ fn number_minus_zero() {
 fn string_with_escapes() {
     parses_to! {
         parser: JsonParser,
-        input: "\"asd\\u0000\\\"\"",
+        input: "\"asd\\u0000\\\"\"".as_bytes(),
         rule: Rule::string,
         tokens: [
             string(0, 13)
@@ -381,7 +381,7 @@ fn string_with_escapes() {
 fn array_empty() {
     parses_to! {
         parser: JsonParser,
-        input: "[ ]",
+        input: "[ ]".as_bytes(),
         rule: Rule::array,
         tokens: [
             array(0, 3)
@@ -393,7 +393,7 @@ fn array_empty() {
 fn array() {
     parses_to! {
         parser: JsonParser,
-        input: "[0.0e1, false, null, \"a\", [0]]",
+        input: "[0.0e1, false, null, \"a\", [0]]".as_bytes(),
         rule: Rule::array,
         tokens: [
             array(0, 30, [
@@ -415,7 +415,7 @@ fn array() {
 fn object() {
     parses_to! {
         parser: JsonParser,
-        input: "{\"a\" : 3, \"b\" : [{}, 3]}",
+        input: "{\"a\" : 3, \"b\" : [{}, 3]}".as_bytes(),
         rule: Rule::object,
         tokens: [
             object(0, 24, [
@@ -439,7 +439,7 @@ fn object() {
 
 #[test]
 fn ast() {
-    let input = "{\"a\": [null, true, 3.4]}";
+    let input = "{\"a\": [null, true, 3.4]}".as_bytes();
 
     let ast = consume(
         JsonParser::parse(Rule::json, input)

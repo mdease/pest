@@ -36,7 +36,7 @@ impl<'i> Span<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let start = Position::from_start(input);
     /// let end = start.clone();
     /// let span = start.span(&end);
@@ -54,7 +54,7 @@ impl<'i> Span<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let start = Position::from_start(input);
     /// let end = start.clone();
     /// let span = start.span(&end);
@@ -72,7 +72,7 @@ impl<'i> Span<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let start = Position::from_start(input);
     /// let end = start.clone();
     /// let span = start.clone().span(&end);
@@ -82,6 +82,7 @@ impl<'i> Span<'i> {
     #[inline]
     pub fn start_pos(&self) -> position::Position<'i> {
         // Span's start position is always a UTF-8 border.
+        // TODO here
         unsafe { position::new(self.input, self.start) }
     }
 
@@ -91,7 +92,7 @@ impl<'i> Span<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let start = Position::from_start(input);
     /// let end = start.clone();
     /// let span = start.span(&end);
@@ -101,6 +102,7 @@ impl<'i> Span<'i> {
     #[inline]
     pub fn end_pos(&self) -> position::Position<'i> {
         // Span's end position is always a UTF-8 border.
+        // TODO here
         unsafe { position::new(self.input, self.end) }
     }
 
@@ -110,7 +112,7 @@ impl<'i> Span<'i> {
     ///
     /// ```
     /// # use pest::Position;
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let start = Position::from_start(input);
     /// let end = start.clone();
     /// let span = start.clone().span(&end);
@@ -120,6 +122,7 @@ impl<'i> Span<'i> {
     #[inline]
     pub fn split(self) -> (position::Position<'i>, position::Position<'i>) {
         // Span's start and end positions are always a UTF-8 borders.
+        // TODO here
         let pos1 = unsafe { position::new(self.input, self.start) };
         let pos2 = unsafe { position::new(self.input, self.end) };
 
@@ -136,7 +139,7 @@ impl<'i> Span<'i> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "abc";
+    /// let input = "abc".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input).skip(1).unwrap();
     /// let start_pos = state.position().clone();
     /// state = state.match_string("b").unwrap();

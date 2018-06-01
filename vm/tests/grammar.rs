@@ -28,7 +28,7 @@ fn vm() -> Vm {
 fn string() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "string",
         tokens: [
             string(0, 3)
@@ -40,7 +40,7 @@ fn string() {
 fn insensitive() {
     parses_to! {
         parser: vm(),
-        input: "aBC",
+        input: "aBC".as_bytes(),
         rule: "insensitive",
         tokens: [
             insensitive(0, 3)
@@ -52,7 +52,7 @@ fn insensitive() {
 fn range() {
     parses_to! {
         parser: vm(),
-        input: "6",
+        input: "6".as_bytes(),
         rule: "range",
         tokens: [
             range(0, 1)
@@ -64,7 +64,7 @@ fn range() {
 fn ident() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "ident",
         tokens: [
             ident(0, 3, [
@@ -78,7 +78,7 @@ fn ident() {
 fn pos_pred() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "pos_pred",
         tokens: [
             pos_pred(0, 0)
@@ -90,7 +90,7 @@ fn pos_pred() {
 fn neg_pred() {
     parses_to! {
         parser: vm(),
-        input: "",
+        input: "".as_bytes(),
         rule: "neg_pred",
         tokens: [
             neg_pred(0, 0)
@@ -102,7 +102,7 @@ fn neg_pred() {
 fn double_neg_pred() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "double_neg_pred",
         tokens: [
             double_neg_pred(0, 0)
@@ -114,7 +114,7 @@ fn double_neg_pred() {
 fn sequence() {
     parses_to! {
         parser: vm(),
-        input: "abc   abc",
+        input: "abc   abc".as_bytes(),
         rule: "sequence",
         tokens: [
             sequence(0, 9, [
@@ -129,7 +129,7 @@ fn sequence() {
 fn sequence_compound() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "sequence_compound",
         tokens: [
             sequence_compound(0, 6, [
@@ -144,7 +144,7 @@ fn sequence_compound() {
 fn sequence_atomic() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "sequence_atomic",
         tokens: [
             sequence_atomic(0, 6)
@@ -156,7 +156,7 @@ fn sequence_atomic() {
 fn sequence_non_atomic() {
     parses_to! {
         parser: vm(),
-        input: "abc   abc",
+        input: "abc   abc".as_bytes(),
         rule: "sequence_non_atomic",
         tokens: [
             sequence_non_atomic(0, 9, [
@@ -174,7 +174,7 @@ fn sequence_non_atomic() {
 fn sequence_atomic_space() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "sequence_atomic",
         tokens: []
     };
@@ -184,7 +184,7 @@ fn sequence_atomic_space() {
 fn sequence_atomic_compound() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "sequence_atomic_compound",
         tokens: [
             sequence_atomic_compound(0, 6, [
@@ -201,7 +201,7 @@ fn sequence_atomic_compound() {
 fn sequence_compound_nested() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "sequence_compound_nested",
         tokens: [
             sequence_compound_nested(0, 6, [
@@ -219,7 +219,7 @@ fn sequence_compound_nested() {
 fn sequence_compound_nested_space() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "sequence_compound_nested",
         tokens: []
     };
@@ -229,7 +229,7 @@ fn sequence_compound_nested_space() {
 fn choice_string() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "choice",
         tokens: [
             choice(0, 3, [
@@ -243,7 +243,7 @@ fn choice_string() {
 fn choice_range() {
     parses_to! {
         parser: vm(),
-        input: "0",
+        input: "0".as_bytes(),
         rule: "choice",
         tokens: [
             choice(0, 1, [
@@ -257,7 +257,7 @@ fn choice_range() {
 fn optional_string() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "optional",
         tokens: [
             optional(0, 3, [
@@ -271,7 +271,7 @@ fn optional_string() {
 fn optional_empty() {
     parses_to! {
         parser: vm(),
-        input: "",
+        input: "".as_bytes(),
         rule: "optional",
         tokens: [
             optional(0, 0)
@@ -283,7 +283,7 @@ fn optional_empty() {
 fn repeat_empty() {
     parses_to! {
         parser: vm(),
-        input: "",
+        input: "".as_bytes(),
         rule: "repeat",
         tokens: [
             repeat(0, 0)
@@ -295,7 +295,7 @@ fn repeat_empty() {
 fn repeat_strings() {
     parses_to! {
         parser: vm(),
-        input: "abc   abc",
+        input: "abc   abc".as_bytes(),
         rule: "repeat",
         tokens: [
             repeat(0, 9, [
@@ -310,7 +310,7 @@ fn repeat_strings() {
 fn repeat_atomic_empty() {
     parses_to! {
         parser: vm(),
-        input: "",
+        input: "".as_bytes(),
         rule: "repeat_atomic",
         tokens: [
             repeat_atomic(0, 0)
@@ -322,7 +322,7 @@ fn repeat_atomic_empty() {
 fn repeat_atomic_strings() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "repeat_atomic",
         tokens: [
             repeat_atomic(0, 6)
@@ -335,7 +335,7 @@ fn repeat_atomic_strings() {
 fn repeat_atomic_space() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_atomic",
         tokens: []
     };
@@ -346,7 +346,7 @@ fn repeat_atomic_space() {
 fn repeat_once_empty() {
     parses_to! {
         parser: vm(),
-        input: "",
+        input: "".as_bytes(),
         rule: "repeat_once",
         tokens: []
     };
@@ -356,7 +356,7 @@ fn repeat_once_empty() {
 fn repeat_once_strings() {
     parses_to! {
         parser: vm(),
-        input: "abc   abc",
+        input: "abc   abc".as_bytes(),
         rule: "repeat_once",
         tokens: [
             repeat_once(0, 9, [
@@ -372,7 +372,7 @@ fn repeat_once_strings() {
 fn repeat_once_atomic_empty() {
     parses_to! {
         parser: vm(),
-        input: "",
+        input: "".as_bytes(),
         rule: "repeat_once_atomic",
         tokens: []
     };
@@ -382,7 +382,7 @@ fn repeat_once_atomic_empty() {
 fn repeat_once_atomic_strings() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "repeat_once_atomic",
         tokens: [
             repeat_once_atomic(0, 6)
@@ -395,7 +395,7 @@ fn repeat_once_atomic_strings() {
 fn repeat_once_atomic_space() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_once_atomic",
         tokens: []
     };
@@ -405,7 +405,7 @@ fn repeat_once_atomic_space() {
 fn repeat_min_max_twice() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_min_max",
         tokens: [
             repeat_min_max(0, 7, [
@@ -420,7 +420,7 @@ fn repeat_min_max_twice() {
 fn repeat_min_max_thrice() {
     parses_to! {
         parser: vm(),
-        input: "abc abc abc",
+        input: "abc abc abc".as_bytes(),
         rule: "repeat_min_max",
         tokens: [
             repeat_min_max(0, 11, [
@@ -436,7 +436,7 @@ fn repeat_min_max_thrice() {
 fn repeat_min_max_atomic_twice() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "repeat_min_max_atomic",
         tokens: [
             repeat_min_max_atomic(0, 6)
@@ -448,7 +448,7 @@ fn repeat_min_max_atomic_twice() {
 fn repeat_min_max_atomic_thrice() {
     parses_to! {
         parser: vm(),
-        input: "abcabcabc",
+        input: "abcabcabc".as_bytes(),
         rule: "repeat_min_max_atomic",
         tokens: [
             repeat_min_max_atomic(0, 9)
@@ -461,7 +461,7 @@ fn repeat_min_max_atomic_thrice() {
 fn repeat_min_max_atomic_space() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_min_max_atomic",
         tokens: []
     };
@@ -471,7 +471,7 @@ fn repeat_min_max_atomic_space() {
 fn repeat_exact() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_exact",
         tokens: [
             repeat_exact(0, 7, [
@@ -487,7 +487,7 @@ fn repeat_exact() {
 fn repeat_min_once() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "repeat_min",
         tokens: []
     };
@@ -497,7 +497,7 @@ fn repeat_min_once() {
 fn repeat_min_twice() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_min",
         tokens: [
             repeat_min(0, 7, [
@@ -512,7 +512,7 @@ fn repeat_min_twice() {
 fn repeat_min_thrice() {
     parses_to! {
         parser: vm(),
-        input: "abc abc  abc",
+        input: "abc abc  abc".as_bytes(),
         rule: "repeat_min",
         tokens: [
             repeat_min(0, 12, [
@@ -529,7 +529,7 @@ fn repeat_min_thrice() {
 fn repeat_min_atomic_once() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "repeat_min_atomic",
         tokens: []
     };
@@ -539,7 +539,7 @@ fn repeat_min_atomic_once() {
 fn repeat_min_atomic_twice() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "repeat_min_atomic",
         tokens: [
             repeat_min_atomic(0, 6)
@@ -551,7 +551,7 @@ fn repeat_min_atomic_twice() {
 fn repeat_min_atomic_thrice() {
     parses_to! {
         parser: vm(),
-        input: "abcabcabc",
+        input: "abcabcabc".as_bytes(),
         rule: "repeat_min_atomic",
         tokens: [
             repeat_min_atomic(0, 9)
@@ -564,7 +564,7 @@ fn repeat_min_atomic_thrice() {
 fn repeat_min_atomic_space() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_min_atomic",
         tokens: []
     };
@@ -574,7 +574,7 @@ fn repeat_min_atomic_space() {
 fn repeat_max_once() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "repeat_max",
         tokens: [
             repeat_max(0, 3, [
@@ -588,7 +588,7 @@ fn repeat_max_once() {
 fn repeat_max_twice() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_max",
         tokens: [
             repeat_max(0, 7, [
@@ -604,7 +604,7 @@ fn repeat_max_twice() {
 fn repeat_max_thrice() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_max",
         tokens: []
     };
@@ -614,7 +614,7 @@ fn repeat_max_thrice() {
 fn repeat_max_atomic_once() {
     parses_to! {
         parser: vm(),
-        input: "abc",
+        input: "abc".as_bytes(),
         rule: "repeat_max_atomic",
         tokens: [
             repeat_max_atomic(0, 3)
@@ -626,7 +626,7 @@ fn repeat_max_atomic_once() {
 fn repeat_max_atomic_twice() {
     parses_to! {
         parser: vm(),
-        input: "abcabc",
+        input: "abcabc".as_bytes(),
         rule: "repeat_max_atomic",
         tokens: [
             repeat_max_atomic(0, 6)
@@ -639,7 +639,7 @@ fn repeat_max_atomic_twice() {
 fn repeat_max_atomic_thrice() {
     parses_to! {
         parser: vm(),
-        input: "abcabcabc",
+        input: "abcabcabc".as_bytes(),
         rule: "repeat_max_atomic",
         tokens: []
     };
@@ -650,7 +650,7 @@ fn repeat_max_atomic_thrice() {
 fn repeat_max_atomic_space() {
     parses_to! {
         parser: vm(),
-        input: "abc abc",
+        input: "abc abc".as_bytes(),
         rule: "repeat_max_atomic",
         tokens: []
     };
@@ -660,7 +660,7 @@ fn repeat_max_atomic_space() {
 fn repeat_comment() {
     parses_to! {
         parser: vm(),
-        input: "abc$$$ $$$abc",
+        input: "abc$$$ $$$abc".as_bytes(),
         rule: "repeat_once",
         tokens: [
             repeat_once(0, 13, [
@@ -675,7 +675,7 @@ fn repeat_comment() {
 fn peek() {
     parses_to! {
         parser: vm(),
-        input: "0111",
+        input: "0111".as_bytes(),
         rule: "peek_",
         tokens: [
             peek_(0, 4, [
@@ -690,7 +690,7 @@ fn peek() {
 fn pop() {
     parses_to! {
         parser: vm(),
-        input: "0110",
+        input: "0110".as_bytes(),
         rule: "pop_",
         tokens: [
             pop_(0, 4, [
@@ -705,7 +705,7 @@ fn pop() {
 fn pop_fail() {
     parses_to! {
         parser: vm(),
-        input: "010",
+        input: "010".as_bytes(),
         rule: "pop_fail",
         tokens: [
             pop_fail(0, 3, [
@@ -720,7 +720,7 @@ fn pop_fail() {
 fn repeat_mutate_stack() {
     parses_to! {
         parser: vm(),
-        input: "a,b,c,cba",
+        input: "a,b,c,cba".as_bytes(),
         rule: "repeat_mutate_stack",
         tokens: [
             repeat_mutate_stack(0, 9)
@@ -732,7 +732,7 @@ fn repeat_mutate_stack() {
 fn checkpoint_restore() {
     parses_to! {
         parser: vm(),
-        input: "a",
+        input: "a".as_bytes(),
         rule: "checkpoint_restore",
         tokens: [
             checkpoint_restore(0, 1, [EOI(1, 1)])

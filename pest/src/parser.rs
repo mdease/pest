@@ -14,5 +14,5 @@ use iterators::Pairs;
 /// A `trait` that defines a `Parser`.
 pub trait Parser<R: RuleType> {
     /// Parses an `&str` starting from `rule`.
-    fn parse(rule: R, input: &str) -> Result<Pairs<R>, Error<R>>;
+    fn parse(rule: R, input: &[u8]) -> Result<Pairs<R>, Error<R>>;
 }

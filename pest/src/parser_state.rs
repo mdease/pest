@@ -55,10 +55,10 @@ pub struct ParserState<'i, R: RuleType> {
 ///
 /// ```
 /// # use pest;
-/// let input = "";
+/// let input = "".as_bytes();
 /// pest::state::<(), _>(input, |s| Ok(s)).unwrap();
 /// ```
-pub fn state<'i, R: RuleType, F>(input: &'i str, f: F) -> Result<pairs::Pairs<'i, R>, Error<R>>
+pub fn state<'i, R: RuleType, F>(input: &'i [u8], f: F) -> Result<pairs::Pairs<'i, R>, Error<R>>
 where
     F: FnOnce(Box<ParserState<'i, R>>) -> ParseResult<Box<ParserState<'i, R>>>
 {
@@ -67,7 +67,7 @@ where
     match f(state) {
         Ok(state) => {
             let len = state.queue.len();
-            Ok(pairs::new(Rc::new(state.queue), input.as_bytes(), 0, len))
+            Ok(pairs::new(Rc::new(state.queue), input, 0, len))
         }
         Err(mut state) => {
             state.pos_attempts.sort();
@@ -80,7 +80,8 @@ where
                     positives: state.pos_attempts.clone(),
                     negatives: state.neg_attempts.clone()
                 },
-                unsafe { position::new(input.as_bytes(), state.attempt_pos) }
+                // TODO here
+                unsafe { position::new(input, state.attempt_pos) }
             ))
         }
     }
@@ -94,10 +95,11 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///
     /// ```
     /// # use pest;
-    /// let input = "";
+    /// let input = "".as_bytes();
     /// let state: Box<pest::ParserState<&str>> = pest::ParserState::new(input);
     /// ```
-    pub fn new(input: &'i str) -> Box<Self> {
+    pub fn new(input: &'i [u8]) -> Box<Self> {
+        // TODO here
         Box::new(ParserState {
             position: Position::from_start(input),
             queue: vec![],
@@ -122,7 +124,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     ab
     /// }
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let position = state.position();
     /// assert_eq!(position.pos(), 0);
@@ -144,7 +146,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     ab
     /// }
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let atomicity = state.atomicity();
     /// assert_eq!(atomicity, Atomicity::NonAtomic);
@@ -166,7 +168,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "a";
+    /// let input = "a".as_bytes();
     /// let pairs: Vec<_> = pest::state(input, |state| {
     ///     state.rule(Rule::a, |s| Ok(s))
     /// }).unwrap().collect();
@@ -320,7 +322,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "a";
+    /// let input = "a".as_bytes();
     /// let pairs: Vec<_> = pest::state(input, |state| {
     ///     state.sequence(|s| {
     ///         s.rule(Rule::a, |s| Ok(s)).and_then(|s| {
@@ -367,7 +369,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     ab
     /// }
     ///
-    /// let input = "aab";
+    /// let input = "aab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.repeat(|s| {
     ///     s.match_string("a")
@@ -410,7 +412,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     ab
     /// }
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let result = state.optional(|s| {
     ///     s.match_string("ab")
@@ -445,7 +447,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.match_string("ab");
     /// assert!(result.is_ok());
@@ -477,7 +479,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.match_insensitive("AB");
     /// assert!(result.is_ok());
@@ -509,7 +511,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.match_range('a'..'z');
     /// assert!(result.is_ok());
@@ -541,7 +543,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.skip(1);
     /// assert!(result.is_ok());
@@ -573,7 +575,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "abcd";
+    /// let input = "abcd".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.skip_until(&["c", "d"]);
     /// assert!(result.is_ok());
@@ -600,7 +602,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.start_of_input();
     /// assert!(result.is_ok());
@@ -631,7 +633,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.end_of_input();
     /// assert!(result.is_err());
@@ -665,7 +667,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "a";
+    /// let input = "a".as_bytes();
     /// let pairs: Vec<_> = pest::state(input, |state| {
     ///     state.lookahead(true, |state| {
     ///         state.rule(Rule::a, |s| Ok(s))
@@ -732,7 +734,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     ///     a
     /// }
     ///
-    /// let input = "a";
+    /// let input = "a".as_bytes();
     /// let pairs: Vec<_> = pest::state(input, |state| {
     ///     state.atomic(Atomicity::Atomic, |s| {
     ///         s.rule(Rule::a, |s| Ok(s))
@@ -783,7 +785,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.stack_push(|state| state.match_string("a"));
     /// assert!(result.is_ok());
@@ -820,7 +822,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "aa";
+    /// let input = "aa".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.stack_push(|state| state.match_string("a")).and_then(
     ///     |state| state.stack_peek()
@@ -849,7 +851,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "aa";
+    /// let input = "aa".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.stack_push(|state| state.match_string("a")).and_then(
     ///     |state| state.stack_pop()
@@ -876,7 +878,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "aaaa";
+    /// let input = "aaaa".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.stack_push(|state| state.match_string("a")).and_then(|state| {
     ///     state.stack_push(|state| state.match_string("a"))
@@ -909,7 +911,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "aaaa";
+    /// let input = "aaaa".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.stack_push(|state| state.match_string("a")).and_then(|state| {
     ///     state.stack_push(|state| state.match_string("a"))
@@ -948,7 +950,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "aa";
+    /// let input = "aa".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.stack_push(|state| state.match_string("a")).and_then(
     ///     |state| state.stack_drop()
@@ -975,7 +977,7 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     /// enum Rule {}
     ///
-    /// let input = "ab";
+    /// let input = "ab".as_bytes();
     /// let mut state: Box<pest::ParserState<Rule>> = pest::ParserState::new(input);
     /// let mut result = state.restore_on_err(|state| state.stack_push(|state|
     ///     state.match_string("a")).and_then(|state| state.match_string("a"))

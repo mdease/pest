@@ -175,7 +175,7 @@ macro_rules! consumes_to {
 /// # struct AbcParser;
 /// #
 /// # impl Parser<Rule> for AbcParser {
-/// #     fn parse<'i>(_: Rule, input: &'i str) -> Result<Pairs<'i, Rule>, Error<Rule>> {
+/// #     fn parse<'i>(_: Rule, input: &'i [u8]) -> Result<Pairs<'i, Rule>, Error<Rule>> {
 /// #         pest::state(input, |state| {
 /// #             state.rule(Rule::a, |state| {
 /// #                 state.skip(1).unwrap().rule(Rule::b, |state| {
@@ -191,7 +191,7 @@ macro_rules! consumes_to {
 /// # }
 /// parses_to! {
 ///     parser: AbcParser,
-///     input:  "abcde",
+///     input:  "abcde".as_bytes(),
 ///     rule:   Rule::a,
 ///     tokens: [
 ///         a(0, 3, [
@@ -276,7 +276,7 @@ macro_rules! parses_to {
 /// # struct AbcParser;
 /// #
 /// # impl Parser<Rule> for AbcParser {
-/// #     fn parse<'i>(_: Rule, input: &'i str) -> Result<Pairs<'i, Rule>, Error<Rule>> {
+/// #     fn parse<'i>(_: Rule, input: &'i [u8]) -> Result<Pairs<'i, Rule>, Error<Rule>> {
 /// #         pest::state(input, |state| {
 /// #             state.rule(Rule::a, |state| {
 /// #                 state.skip(1).unwrap().rule(Rule::b, |s| {
@@ -292,7 +292,7 @@ macro_rules! parses_to {
 /// # }
 /// fails_with! {
 ///     parser: AbcParser,
-///     input: "abcdf",
+///     input: "abcdf".as_bytes(),
 ///     rule: Rule::a,
 ///     positives: vec![Rule::c],
 ///     negatives: vec![],
@@ -344,7 +344,7 @@ pub mod tests {
     pub struct AbcParser;
 
     impl Parser<Rule> for AbcParser {
-        fn parse<'i>(_: Rule, input: &'i str) -> Result<Pairs<'i, Rule>, Error<Rule>> {
+        fn parse<'i>(_: Rule, input: &'i [u8]) -> Result<Pairs<'i, Rule>, Error<Rule>> {
             state(input, |state| {
                 state
                     .rule(Rule::a, |s| {
@@ -363,7 +363,7 @@ pub mod tests {
     fn parses_to() {
         parses_to! {
             parser: AbcParser,
-            input: "abcde",
+            input: "abcde".as_bytes(),
             rule: Rule::a,
             tokens: [
                 a(0, 3, [
@@ -379,7 +379,7 @@ pub mod tests {
     fn missing_end() {
         parses_to! {
             parser: AbcParser,
-            input: "abcde",
+            input: "abcde".as_bytes(),
             rule: Rule::a,
             tokens: [
                 a(0, 3, [
@@ -394,7 +394,7 @@ pub mod tests {
     fn empty() {
         parses_to! {
             parser: AbcParser,
-            input: "abcde",
+            input: "abcde".as_bytes(),
             rule: Rule::a,
             tokens: []
         };
@@ -404,7 +404,7 @@ pub mod tests {
     fn fails_with() {
         fails_with! {
             parser: AbcParser,
-            input: "abcdf",
+            input: "abcdf".as_bytes(),
             rule: Rule::a,
             positives: vec![Rule::c],
             negatives: vec![],
@@ -417,7 +417,7 @@ pub mod tests {
     fn wrong_positives() {
         fails_with! {
             parser: AbcParser,
-            input: "abcdf",
+            input: "abcdf".as_bytes(),
             rule: Rule::a,
             positives: vec![Rule::a],
             negatives: vec![],
@@ -430,7 +430,7 @@ pub mod tests {
     fn wrong_negatives() {
         fails_with! {
             parser: AbcParser,
-            input: "abcdf",
+            input: "abcdf".as_bytes(),
             rule: Rule::a,
             positives: vec![Rule::c],
             negatives: vec![Rule::c],
@@ -443,7 +443,7 @@ pub mod tests {
     fn wrong_pos() {
         fails_with! {
             parser: AbcParser,
-            input: "abcdf",
+            input: "abcdf".as_bytes(),
             rule: Rule::a,
             positives: vec![Rule::c],
             negatives: vec![],
