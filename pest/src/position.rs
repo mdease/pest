@@ -321,6 +321,17 @@ impl<'i> Position<'i> {
         }
     }
 
+    /// Matches a u16 (any two bytes). Returns false iff there aren't two bytes left
+    #[inline]
+    pub(crate) fn match_u16(&mut self) -> bool {
+        if self.pos < self.input.len() - 1 {
+            self.pos += 2;
+            true
+        } else {
+            false
+        }
+    }
+
     /// Matches `char` `range` from the `Position` and returns `true` if a match was made or `false`
     /// otherwise. If no match was made, `pos` will not be updated.
     #[inline]

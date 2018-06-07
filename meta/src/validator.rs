@@ -91,6 +91,7 @@ pub fn validate_pairs<'i>(pairs: Pairs<'i, Rule>) -> Result<Vec<&'i str>, Vec<Er
     builtins.insert("POP");
     builtins.insert("POP_ALL");
     builtins.insert("SOI");
+    builtins.insert("U16");
     builtins.insert("DIGIT");
     builtins.insert("NONZERO_DIGIT");
     builtins.insert("BIN_DIGIT");

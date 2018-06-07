@@ -7,11 +7,15 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
+extern crate byteorder;
+
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ptr;
 use std::rc::Rc;
 use std::str;
+
+use self::byteorder::{ByteOrder, LittleEndian};
 
 use super::pairs::{self, Pairs};
 use super::queueable_token::QueueableToken;
@@ -98,6 +102,19 @@ impl<'i, R: RuleType> Pair<'i, R> {
 
         // Generated positions always come from Positions and are UTF-8 borders.
         unsafe { str::from_utf8_unchecked(&self.input[start..end]) }
+    }
+
+    /// Read from the Pair and convert the input to the type specified by the respective rule
+    ///
+    /// TODO: obviously just works for u16's right now
+    ///       make the return type general? or need one fn for each type?
+    /// also TODO: ignores endianness
+    #[inline]
+    pub fn as_type(&self) -> u16 {
+        let start = self.pos(self.start);
+        let end = self.pos(self.pair());
+
+        LittleEndian::read_u16(&self.input[start..end])
     }
 
     /// Returns the `Span` defined by the `Pair`, consuming it.

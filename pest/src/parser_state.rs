@@ -499,6 +499,16 @@ impl<'i, R: RuleType> ParserState<'i, R> {
         }
     }
 
+    /// Matches a u16
+    #[inline]
+    pub fn match_u16(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_u16() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
     /// Asks the `ParserState` to match a `char` `range` from the given `string`. If the match is
     /// successful, this will return an `Ok` with the updated `Box<ParserState>`. If failed, an
     /// `Err` with the updated `Box<ParserState>` is returned.
