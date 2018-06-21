@@ -15,7 +15,7 @@ use std::ptr;
 use std::rc::Rc;
 use std::str;
 
-use self::byteorder::{ByteOrder, LittleEndian};
+use self::byteorder::{ByteOrder, BigEndian, LittleEndian};
 
 use super::pairs::{self, Pairs};
 use super::queueable_token::QueueableToken;
@@ -33,14 +33,16 @@ use span::{self, Span};
 pub struct Pair<'i, R> {
     queue: Rc<Vec<QueueableToken<R>>>,
     input: &'i [u8],
-    start: usize
+    start: usize,
+    little_endian: bool
 }
 
-pub fn new<R: RuleType>(queue: Rc<Vec<QueueableToken<R>>>, input: &[u8], start: usize) -> Pair<R> {
+pub fn new<R: RuleType>(queue: Rc<Vec<QueueableToken<R>>>, input: &[u8], start: usize, little_endian: bool) -> Pair<R> {
     Pair {
         queue,
         input,
-        start
+        start,
+        little_endian
     }
 }
 
@@ -108,13 +110,16 @@ impl<'i, R: RuleType> Pair<'i, R> {
     ///
     /// TODO: obviously just works for u16's right now
     ///       make the return type general? or need one fn for each type?
-    /// also TODO: ignores endianness
     #[inline]
     pub fn as_type(&self) -> u16 {
         let start = self.pos(self.start);
         let end = self.pos(self.pair());
 
-        LittleEndian::read_u16(&self.input[start..end])
+        if self.little_endian {
+            LittleEndian::read_u16(&self.input[start..end])
+        } else {
+            BigEndian::read_u16(&self.input[start..end])
+        }
     }
 
     /// Returns the `Span` defined by the `Pair`, consuming it.
@@ -173,7 +178,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
         let end = self.pos(self.pair());
 
         // Generated positions always come from Positions and are UTF-8 borders.
-        unsafe { span::new(self.input, start, end) }
+        unsafe { span::new(self.input, start, end, self.little_endian) }
     }
 
     /// Returns the inner `Pairs` between the `Pair`, consuming it.
@@ -201,7 +206,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     pub fn into_inner(self) -> Pairs<'i, R> {
         let pair = self.pair();
 
-        pairs::new(self.queue, self.input, self.start + 1, pair)
+        pairs::new(self.queue, self.input, self.start + 1, pair, self.little_endian)
     }
 
     /// Converts the `Pair` into a `TokenIterator`.
@@ -230,7 +235,7 @@ impl<'i, R: RuleType> Pair<'i, R> {
     pub fn tokens(self) -> Tokens<'i, R> {
         let end = self.pair();
 
-        tokens::new(self.queue, self.input, self.start, end + 1)
+        tokens::new(self.queue, self.input, self.start, end + 1, self.little_endian)
     }
 
     fn pair(&self) -> usize {

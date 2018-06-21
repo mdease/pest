@@ -23,20 +23,23 @@ pub struct Tokens<'i, R> {
     queue: Rc<Vec<QueueableToken<R>>>,
     input: &'i [u8],
     start: usize,
-    end: usize
+    end: usize,
+    little_endian: bool
 }
 
 pub fn new<R: RuleType>(
     queue: Rc<Vec<QueueableToken<R>>>,
     input: &[u8],
     start: usize,
-    end: usize
+    end: usize,
+    little_endian: bool
 ) -> Tokens<R> {
     Tokens {
         queue,
         input,
         start,
-        end
+        end,
+        little_endian
     }
 }
 
@@ -56,7 +59,7 @@ impl<'i, R: RuleType> Tokens<'i, R> {
                     rule,
                     // QueueableTokens are safely created.
                     // TODO here
-                    pos: unsafe { position::new(self.input, input_pos) }
+                    pos: unsafe { position::new(self.input, input_pos, self.little_endian) }
                 }
             }
             QueueableToken::End {
@@ -66,7 +69,7 @@ impl<'i, R: RuleType> Tokens<'i, R> {
                     rule,
                     // QueueableTokens are safely created.
                     // TODO here
-                    pos: unsafe { position::new(self.input, input_pos) }
+                    pos: unsafe { position::new(self.input, input_pos, self.little_endian) }
                 }
             }
         }

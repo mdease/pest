@@ -327,7 +327,7 @@ mod tests {
     #[test]
     fn display_parsing_error_mixed() {
         let input = b"ab\ncd\nef";
-        let pos = unsafe { position::new(input, 4) };
+        let pos = unsafe { position::new(input, 4, true) };
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2, 3],
@@ -352,7 +352,7 @@ mod tests {
     #[test]
     fn display_parsing_error_positives() {
         let input = b"ab\ncd\nef";
-        let pos = unsafe { position::new(input, 4) };
+        let pos = unsafe { position::new(input, 4, true) };
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2],
@@ -377,7 +377,7 @@ mod tests {
     #[test]
     fn display_parsing_error_negatives() {
         let input = b"ab\ncd\nef";
-        let pos = unsafe { position::new(input, 4) };
+        let pos = unsafe { position::new(input, 4, true) };
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![],
@@ -402,7 +402,7 @@ mod tests {
     #[test]
     fn display_parsing_error_unknown() {
         let input = b"ab\ncd\nef";
-        let pos = unsafe { position::new(input, 4) };
+        let pos = unsafe { position::new(input, 4, true) };
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![],
@@ -427,7 +427,7 @@ mod tests {
     #[test]
     fn display_custom_pos() {
         let input = b"ab\ncd\nef";
-        let pos = unsafe { position::new(input, 4) };
+        let pos = unsafe { position::new(input, 4, true) };
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned()
@@ -451,8 +451,8 @@ mod tests {
     #[test]
     fn display_custom_span_two_lines() {
         let input = b"ab\ncd\nefgh";
-        let start = unsafe { position::new(input, 4) };
-        let end = unsafe { position::new(input, 9) };
+        let start = unsafe { position::new(input, 4, true) };
+        let end = unsafe { position::new(input, 9, true) };
         let error: Error<u32> = Error::new_from_span(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned()
@@ -477,8 +477,8 @@ mod tests {
     #[test]
     fn display_custom_span_three_lines() {
         let input = b"ab\ncd\nefgh";
-        let start = unsafe { position::new(input, 1) };
-        let end = unsafe { position::new(input, 9) };
+        let start = unsafe { position::new(input, 1, true) };
+        let end = unsafe { position::new(input, 9, true) };
         let error: Error<u32> = Error::new_from_span(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned()
@@ -504,8 +504,8 @@ mod tests {
     #[test]
     fn display_custom_span_two_lines_inverted_cols() {
         let input = b"abcdef\ngh";
-        let start = unsafe { position::new(input, 5) };
-        let end = unsafe { position::new(input, 8) };
+        let start = unsafe { position::new(input, 5, true) };
+        let end = unsafe { position::new(input, 8, true) };
         let error: Error<u32> = Error::new_from_span(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned()
@@ -530,7 +530,7 @@ mod tests {
     #[test]
     fn mapped_parsing_error() {
         let input = b"ab\ncd\nef";
-        let pos = unsafe { position::new(input, 4) };
+        let pos = unsafe { position::new(input, 4, true) };
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2, 3],

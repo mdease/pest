@@ -15,7 +15,7 @@ use std::hash::{Hash, Hasher};
 use std::ptr;
 use std::str;
 
-use self::byteorder::{ByteOrder, LittleEndian};
+use self::byteorder::{ByteOrder, BigEndian, LittleEndian};
 
 use position;
 
@@ -25,12 +25,13 @@ use position;
 pub struct Span<'i> {
     input: &'i [u8],
     start: usize,
-    end: usize
+    end: usize,
+    little_endian: bool
 }
 
 #[inline]
-pub unsafe fn new(input: &[u8], start: usize, end: usize) -> Span {
-    Span { input, start, end }
+pub unsafe fn new(input: &[u8], start: usize, end: usize, little_endian: bool) -> Span {
+    Span { input, start, end, little_endian }
 }
 
 impl<'i> Span<'i> {
@@ -87,7 +88,7 @@ impl<'i> Span<'i> {
     pub fn start_pos(&self) -> position::Position<'i> {
         // Span's start position is always a UTF-8 border.
         // TODO here
-        unsafe { position::new(self.input, self.start) }
+        unsafe { position::new(self.input, self.start, self.little_endian) }
     }
 
     /// Returns the `Span`'s end `Position`.
@@ -107,7 +108,7 @@ impl<'i> Span<'i> {
     pub fn end_pos(&self) -> position::Position<'i> {
         // Span's end position is always a UTF-8 border.
         // TODO here
-        unsafe { position::new(self.input, self.end) }
+        unsafe { position::new(self.input, self.end, self.little_endian) }
     }
 
     /// Splits the `Span` into a pair of `Position`s.
@@ -127,8 +128,8 @@ impl<'i> Span<'i> {
     pub fn split(self) -> (position::Position<'i>, position::Position<'i>) {
         // Span's start and end positions are always a UTF-8 borders.
         // TODO here
-        let pos1 = unsafe { position::new(self.input, self.start) };
-        let pos2 = unsafe { position::new(self.input, self.end) };
+        let pos1 = unsafe { position::new(self.input, self.start, self.little_endian) };
+        let pos2 = unsafe { position::new(self.input, self.end, self.little_endian) };
 
         (pos1, pos2)
     }
@@ -160,10 +161,13 @@ impl<'i> Span<'i> {
     ///
     /// TODO: obviously just works for u16's right now
     ///       make the return type general? or need one fn for each type?
-    /// also TODO: ignores endianness
     #[inline]
     pub fn as_type(&self) -> u16 {
-        LittleEndian::read_u16(&self.input[self.start..self.end])
+        if self.little_endian {
+            LittleEndian::read_u16(&self.input[self.start..self.end])
+        } else {
+            BigEndian::read_u16(&self.input[self.start..self.end])
+        }
     }
 }
 
@@ -179,7 +183,7 @@ impl<'i> fmt::Debug for Span<'i> {
 
 impl<'i> Clone for Span<'i> {
     fn clone(&self) -> Span<'i> {
-        unsafe { new(self.input, self.start, self.end) }
+        unsafe { new(self.input, self.start, self.end, self.little_endian) }
     }
 }
 

@@ -46,7 +46,8 @@ pub struct ParserState<'i, R: RuleType> {
     neg_attempts: Vec<R>,
     attempt_pos: usize,
     atomicity: Atomicity,
-    stack: Stack<Span<'i>>
+    stack: Stack<Span<'i>>,
+    little_endian: bool
 }
 
 /// Creates a `ParserState` from a `&str`, supplying it to a closure `f`.
@@ -67,7 +68,9 @@ where
     match f(state) {
         Ok(state) => {
             let len = state.queue.len();
-            Ok(pairs::new(Rc::new(state.queue), input, 0, len))
+            //endianness
+            let little_endian = state.little_endian;
+            Ok(pairs::new(Rc::new(state.queue), input, 0, len, little_endian))
         }
         Err(mut state) => {
             state.pos_attempts.sort();
@@ -81,7 +84,7 @@ where
                     negatives: state.neg_attempts.clone()
                 },
                 // TODO here
-                unsafe { position::new(input, state.attempt_pos) }
+                unsafe { position::new(input, state.attempt_pos, state.little_endian) }
             ))
         }
     }
@@ -108,7 +111,8 @@ impl<'i, R: RuleType> ParserState<'i, R> {
             neg_attempts: vec![],
             attempt_pos: 0,
             atomicity: Atomicity::NonAtomic,
-            stack: Stack::new()
+            stack: Stack::new(),
+            little_endian: true
         })
     }
 
@@ -503,6 +507,28 @@ impl<'i, R: RuleType> ParserState<'i, R> {
     #[inline]
     pub fn match_u16(mut self: Box<Self>) -> ParseResult<Box<Self>> {
         if self.position.match_u16() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Sets the byte order to be little endian
+    #[inline]
+    pub fn set_le(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.set_le() {
+            self.little_endian = true;
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Sets the byte order to be big endian
+    #[inline]
+    pub fn set_be(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.set_be() {
+            self.little_endian = false;
             Ok(self)
         } else {
             Err(self)

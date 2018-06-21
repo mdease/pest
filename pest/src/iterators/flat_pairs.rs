@@ -21,20 +21,23 @@ pub struct FlatPairs<'i, R> {
     queue: Rc<Vec<QueueableToken<R>>>,
     input: &'i [u8],
     start: usize,
-    end: usize
+    end: usize,
+    little_endian: bool
 }
 
 pub fn new<R: RuleType>(
     queue: Rc<Vec<QueueableToken<R>>>,
     input: &[u8],
     start: usize,
-    end: usize
+    end: usize,
+    little_endian: bool
 ) -> FlatPairs<R> {
     FlatPairs {
         queue,
         input,
         start,
-        end
+        end,
+        little_endian
     }
 }
 
@@ -63,7 +66,7 @@ impl<'i, R: RuleType> FlatPairs<'i, R> {
     /// ```
     #[inline]
     pub fn tokens(self) -> Tokens<'i, R> {
-        tokens::new(self.queue, self.input, self.start, self.end)
+        tokens::new(self.queue, self.input, self.start, self.end, self.little_endian)
     }
 
     fn next_start(&mut self) {
@@ -98,7 +101,7 @@ impl<'i, R: RuleType> Iterator for FlatPairs<'i, R> {
             return None;
         }
 
-        let pair = pair::new(Rc::clone(&self.queue), self.input, self.start);
+        let pair = pair::new(Rc::clone(&self.queue), self.input, self.start, self.little_endian);
 
         self.next_start();
 
@@ -114,7 +117,7 @@ impl<'i, R: RuleType> DoubleEndedIterator for FlatPairs<'i, R> {
 
         self.next_start_from_end();
 
-        let pair = pair::new(Rc::clone(&self.queue), self.input, self.end);
+        let pair = pair::new(Rc::clone(&self.queue), self.input, self.end, self.little_endian);
 
         Some(pair)
     }
@@ -134,7 +137,8 @@ impl<'i, R: Clone> Clone for FlatPairs<'i, R> {
             queue: Rc::clone(&self.queue),
             input: self.input,
             start: self.start,
-            end: self.end
+            end: self.end,
+            little_endian: self.little_endian
         }
     }
 }
