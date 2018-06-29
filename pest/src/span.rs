@@ -162,12 +162,22 @@ impl<'i> Span<'i> {
     /// TODO: obviously just works for u16's right now
     ///       make the return type general? or need one fn for each type?
     #[inline]
-    pub fn as_type(&self) -> u16 {
-        if self.little_endian {
-            LittleEndian::read_u16(&self.input[self.start..self.end])
-        } else {
-            BigEndian::read_u16(&self.input[self.start..self.end])
+    pub fn as_type(&self) -> Vec<u16> {
+        let length = (self.end - self.start) / 2;
+        let mut nums = Vec::with_capacity(length);
+
+        for i in 0..length {
+            let start = self.start + i * 2;
+            let end = self.start + (i + 1) * 2;
+
+            nums.push(if self.little_endian {
+                LittleEndian::read_u16(&self.input[start..end])
+            } else {
+                BigEndian::read_u16(&self.input[start..end])
+            });
         }
+
+        nums
     }
 }
 
