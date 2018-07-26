@@ -85,7 +85,20 @@ fn generate_builtin_rules() -> HashMap<&'static str, Tokens> {
     insert_builtin!(builtins, POP_ALL, state.stack_match_pop());
     insert_builtin!(builtins, DROP, state.stack_drop());
 
+    insert_builtin!(builtins, I8, state.match_i8());
+    insert_builtin!(builtins, U8, state.match_u8());
+    insert_builtin!(builtins, I16, state.match_i16());
     insert_builtin!(builtins, U16, state.match_u16());
+    insert_builtin!(builtins, I32, state.match_i32());
+    insert_builtin!(builtins, U32, state.match_u32());
+    insert_builtin!(builtins, I64, state.match_i64());
+    insert_builtin!(builtins, U64, state.match_u64());
+    insert_builtin!(builtins, ISIZE, state.match_isize());
+    insert_builtin!(builtins, USIZE, state.match_usize());
+    insert_builtin!(builtins, F32, state.match_f32());
+    insert_builtin!(builtins, F64, state.match_f64());
+    insert_builtin!(builtins, BOOL, state.match_bool());
+    insert_builtin!(builtins, CHAR, state.match_char());
     insert_builtin!(builtins, LE, state.set_le());
     insert_builtin!(builtins, BE, state.set_be());
 

@@ -322,6 +322,31 @@ impl<'i> Position<'i> {
         }
     }
 
+    /// Matches a i8 (any byte)
+    #[inline]
+    pub(crate) fn match_i8(&mut self) -> bool {
+        self.pos += 1;
+        true
+    }
+
+    /// Matches a u8 (any bytes)
+    #[inline]
+    pub(crate) fn match_u8(&mut self) -> bool {
+        self.pos += 1;
+        true
+    }
+
+    /// Matches a i16 (any two bytes). Returns false iff there aren't two bytes left
+    #[inline]
+    pub(crate) fn match_i16(&mut self) -> bool {
+        if self.pos < self.input.len() - 1 {
+            self.pos += 2;
+            true
+        } else {
+            false
+        }
+    }
+
     /// Matches a u16 (any two bytes). Returns false iff there aren't two bytes left
     #[inline]
     pub(crate) fn match_u16(&mut self) -> bool {
@@ -330,6 +355,132 @@ impl<'i> Position<'i> {
             true
         } else {
             false
+        }
+    }
+
+    /// Matches a i32 (any four bytes). Returns false iff there aren't four bytes left
+    #[inline]
+    pub(crate) fn match_i32(&mut self) -> bool {
+        if self.pos < self.input.len() - 3 {
+            self.pos += 4;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a u32 (any four bytes). Returns false iff there aren't four bytes left
+    #[inline]
+    pub(crate) fn match_u32(&mut self) -> bool {
+        if self.pos < self.input.len() - 3 {
+            self.pos += 4;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a i64 (any eight bytes). Returns false iff there aren't eight bytes left
+    #[inline]
+    pub(crate) fn match_i64(&mut self) -> bool {
+        if self.pos < self.input.len() - 7 {
+            self.pos += 8;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a u64 (any eight bytes). Returns false iff there aren't eight bytes left
+    #[inline]
+    pub(crate) fn match_u64(&mut self) -> bool {
+        if self.pos < self.input.len() - 7 {
+            self.pos += 8;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a isize (any eight bytes). Returns false iff there aren't eight bytes left
+    /// TODO
+    #[inline]
+    pub(crate) fn match_isize(&mut self) -> bool {
+        if self.pos < self.input.len() - 7 {
+            self.pos += 8;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a usize (any eight bytes). Returns false iff there aren't eight bytes left
+    /// TODO
+    #[inline]
+    pub(crate) fn match_usize(&mut self) -> bool {
+        if self.pos < self.input.len() - 7 {
+            self.pos += 8;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a f32 (any four bytes). Returns false iff there aren't four bytes left
+    #[inline]
+    pub(crate) fn match_f32(&mut self) -> bool {
+        if self.pos < self.input.len() - 3 {
+            self.pos += 4;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a f64 (any eight bytes). Returns false iff there aren't eight bytes left
+    #[inline]
+    pub(crate) fn match_f64(&mut self) -> bool {
+        if self.pos < self.input.len() - 7 {
+            self.pos += 8;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a bool (0x0 or 0x1)
+    #[inline]
+    pub(crate) fn match_bool(&mut self) -> bool {
+        let val = self.input[self.pos];
+
+        if val == 0 || val == 1 {
+            self.pos += 1;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Matches a char
+    #[inline]
+    pub(crate) fn match_char(&mut self) -> bool {
+        let len = {
+            // Cannot actually cause undefined behavior.
+            let slice = unsafe { str::from_utf8_unchecked(&self.input[self.pos..]) };
+
+            if let Some(c) = slice.chars().next() {
+                Some(c.len_utf8())
+            } else {
+                None
+            }
+        };
+
+        match len {
+            Some(len) => {
+                self.pos += len;
+                true
+            }
+            None => false
         }
     }
 

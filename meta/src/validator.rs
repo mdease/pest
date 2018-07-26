@@ -92,7 +92,20 @@ pub fn validate_pairs<'i>(pairs: Pairs<'i, Rule>) -> Result<Vec<&'i str>, Vec<Er
     builtins.insert("POP_ALL");
     builtins.insert("SOI");
 
+    builtins.insert("I8");
+    builtins.insert("U8");
+    builtins.insert("I16");
     builtins.insert("U16");
+    builtins.insert("I32");
+    builtins.insert("U32");
+    builtins.insert("I64");
+    builtins.insert("U64");
+    builtins.insert("ISIZE");
+    builtins.insert("USIZE");
+    builtins.insert("F32");
+    builtins.insert("F64");
+    builtins.insert("BOOL");
+    builtins.insert("CHAR");
     builtins.insert("LE");
     builtins.insert("BE");
 

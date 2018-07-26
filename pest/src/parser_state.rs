@@ -503,10 +503,140 @@ impl<'i, R: RuleType> ParserState<'i, R> {
         }
     }
 
+    /// Matches a i8
+    #[inline]
+    pub fn match_i8(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_i8() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a u8
+    #[inline]
+    pub fn match_u8(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_u8() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a i16
+    #[inline]
+    pub fn match_i16(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_i16() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
     /// Matches a u16
     #[inline]
     pub fn match_u16(mut self: Box<Self>) -> ParseResult<Box<Self>> {
         if self.position.match_u16() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a i32
+    #[inline]
+    pub fn match_i32(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_i32() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a u32
+    #[inline]
+    pub fn match_u32(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_u32() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a i64
+    #[inline]
+    pub fn match_i64(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_i64() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a u64
+    #[inline]
+    pub fn match_u64(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_u64() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a isize
+    #[inline]
+    pub fn match_isize(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_isize() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a usize
+    #[inline]
+    pub fn match_usize(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_usize() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a f32
+    #[inline]
+    pub fn match_f32(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_f32() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a f64
+    #[inline]
+    pub fn match_f64(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_f64() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a bool
+    #[inline]
+    pub fn match_bool(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_bool() {
+            Ok(self)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Matches a char
+    #[inline]
+    pub fn match_char(mut self: Box<Self>) -> ParseResult<Box<Self>> {
+        if self.position.match_char() {
             Ok(self)
         } else {
             Err(self)
