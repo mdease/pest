@@ -268,13 +268,7 @@ extern crate proc_macro;
 extern crate quote;
 extern crate syn;
 
-//use std::env;
-//use std::fs::File;
-//use std::io::{self, Read};
-//use std::path::Path;
-
 use proc_macro::TokenStream;
-//use syn::{Attribute, DeriveInput, Generics, Ident, Lit, Meta};
 use syn::{DeriveInput, Generics, Ident};
 use pest_meta::ast::{Expr, Rule as AstRule, RuleType};
 
@@ -282,71 +276,13 @@ use pest_meta::ast::{Expr, Rule as AstRule, RuleType};
 mod macros;
 mod generator;
 
-//use pest_meta::{optimizer, unwrap_or_report, validator};
 use pest_meta::optimizer;
-//use pest_meta::parser::{self, Rule};
 
 #[proc_macro_derive(Parser, attributes(grammar))]
 pub fn derive_parser(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = syn::parse(input).unwrap();
-    let (name, generics, expr) = parse_derive(ast);
+    let (name, generics, fields, types, expr) = parse_derive(ast);
 
-    /*
-    let root = env::var("CARGO_MANIFEST_DIR").unwrap_or(".".into());
-    let path = Path::new(&root).join("src/").join(&path);
-    let file_name = match path.file_name() {
-        Some(file_name) => file_name,
-        None => panic!("grammar attribute should point to a file")
-    };
-
-    let data = match read_file(&path) {
-        Ok(data) => data,
-        Err(error) => panic!("error opening {:?}: {}", file_name, error)
-    };
-
-    // make sure grammar is valid
-    let pairs = match parser::parse(Rule::grammar_rules, &data) {
-        Ok(pairs) => pairs,
-        Err(error) => panic!(
-            "error parsing {:?}\n\n{}",
-            file_name,
-            error.renamed_rules(|rule| match *rule {
-                Rule::grammar_rule => "rule".to_owned(),
-                Rule::_push => "PUSH".to_owned(),
-                Rule::assignment_operator => "`=`".to_owned(),
-                Rule::silent_modifier => "`_`".to_owned(),
-                Rule::atomic_modifier => "`@`".to_owned(),
-                Rule::compound_atomic_modifier => "`$`".to_owned(),
-                Rule::non_atomic_modifier => "`!`".to_owned(),
-                Rule::opening_brace => "`{`".to_owned(),
-                Rule::closing_brace => "`}`".to_owned(),
-                Rule::opening_paren => "`(`".to_owned(),
-                Rule::positive_predicate_operator => "`&`".to_owned(),
-                Rule::negative_predicate_operator => "`!`".to_owned(),
-                Rule::sequence_operator => "`&`".to_owned(),
-                Rule::choice_operator => "`|`".to_owned(),
-                Rule::optional_operator => "`?`".to_owned(),
-                Rule::repeat_operator => "`*`".to_owned(),
-                Rule::repeat_once_operator => "`+`".to_owned(),
-                Rule::comma => "`,`".to_owned(),
-                Rule::closing_paren => "`)`".to_owned(),
-                Rule::quote => "`\"`".to_owned(),
-                Rule::insensitive_string => "`^`".to_owned(),
-                Rule::range_operator => "`..`".to_owned(),
-                Rule::single_quote => "`'`".to_owned(),
-                other_rule => format!("{:?}", other_rule)
-            })
-        )
-    };
-    */
-
-    // for builtin rules?
-    // let defaults = unwrap_or_report(validator::validate_pairs(pairs.clone()));
-    let defaults = ["U16"].to_vec();
-    println!("{:?}", defaults);
-
-    // custom rules?
-    // let ast = unwrap_or_report(parser::consume_rules(pairs));
     let ast = vec![
         AstRule{
             name: "t".to_string(),
@@ -354,33 +290,43 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
             expr: expr
         }
     ];
-    println!("{:?}", ast[0]);
+
+    // get defaults from types
+    // TODO: this is dumb
+    let mut defaults_string: Vec<String> = Vec::new();
+
+    for t in types.iter() {
+        if !defaults_string.contains(&t) {
+            defaults_string.push(t.clone());
+        }
+    }
+
+    // String to &str
+    let defaults = defaults_string.iter().map(|s| &**s).collect();
 
     let optimized = optimizer::optimize(ast);
-
-    println!("{:?}", name);
-
-    let generated = generator::generate(name, &generics, optimized, defaults);
+    let generated = generator::generate(name, &generics, optimized, defaults, fields, types);
 
     generated.into()
 }
 
-// fn read_file<P: AsRef<Path>>(path: P) -> io::Result<String> {
-//     let mut file = File::open(path.as_ref())?;
-//     let mut string = String::new();
-//     file.read_to_string(&mut string)?;
-//     Ok(string)
-// }
-
-fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Expr) {
+fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Vec<String>, Vec<String>, Expr) {
     let name = ast.ident;
     let generics = ast.generics;
 
+    let mut field_idents = Vec::new();
     let mut types = Vec::new();
 
     if let syn::Data::Struct(ref data) = ast.data {
         if let syn::Fields::Named(ref fields) = data.fields {
             for f in fields.named.iter() {
+                // get the field name
+                match f.ident {
+                    Some(ident) => field_idents.push(ident.to_string()),
+                    None => panic!("Could not get field name")
+                }
+
+                // get the type
                 if let syn::Type::Path(ref path) = f.ty {
                     types.push(path.path.segments[0].ident.to_string().to_uppercase());
                 }
@@ -388,46 +334,24 @@ fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Expr) {
         }
     }
 
-    // let grammar: Vec<&Attribute> = ast.attrs
-    //     .iter()
-    //     .filter(|attr| match attr.interpret_meta() {
-    //         Some(Meta::NameValue(name_value)) => name_value.ident.to_string() == "grammar",
-    //         _ => false
-    //     })
-    //     .collect();
+    let sequence = construct_sequence(&mut types.to_vec());
 
-    // let filename = match grammar.len() {
-    //     0 => panic!("a grammar file needs to be provided with the #[grammar = \"...\"] attribute"),
-    //     1 => get_filename(grammar[0]),
-    //     _ => panic!("only 1 grammar file can be provided")
-    // };
-
-    (name, generics, construct_sequence(types))
+    (name, generics, field_idents, types, sequence)
 }
 
-fn construct_sequence(mut types: Vec<String>) -> Expr {
+fn construct_sequence(types: &mut Vec<String>) -> Expr {
     if types.len() == 1 {
         Expr::Ident(types.remove(0))
     } else {
         let mut expr = Expr::Seq(Box::new(Expr::Ident(types.remove(0))), Box::new(Expr::Ident(types.remove(0))));
 
         for t in types {
-            expr = Expr::Seq(Box::new(expr), Box::new(Expr::Ident(t)));
+            expr = Expr::Seq(Box::new(expr), Box::new(Expr::Ident(t.to_string())));
         }
 
         expr
     }
 }
-
-// fn get_filename(attr: &Attribute) -> String {
-//     match attr.interpret_meta() {
-//         Some(Meta::NameValue(name_value)) => match name_value.lit {
-//             Lit::Str(filename) => filename.value(),
-//             _ => panic!("grammar attribute must be a string")
-//         },
-//         _ => panic!("grammar attribute must be of the form `grammar = \"...\"`")
-//     }
-// }
 
 #[cfg(test)]
 mod tests {

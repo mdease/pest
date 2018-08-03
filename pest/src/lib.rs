@@ -56,6 +56,8 @@
 
 #![doc(html_root_url = "https://docs.rs/pest")]
 
+extern crate byteorder;
+
 pub use parser::Parser;
 pub use parser_state::{state, Atomicity, Lookahead, ParseResult, ParserState};
 pub use position::Position;
@@ -71,7 +73,8 @@ mod parser;
 mod parser_state;
 mod position;
 pub mod prec_climber;
-mod span;
+pub mod reader;
+pub mod span;
 mod stack;
 mod token;
 

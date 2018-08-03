@@ -7,15 +7,13 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-extern crate byteorder;
-
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ptr;
 use std::str;
 
-use self::byteorder::{ByteOrder, BigEndian, LittleEndian};
+use byteorder::{ByteOrder, BigEndian, LittleEndian};
 
 use position;
 
