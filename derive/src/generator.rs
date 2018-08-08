@@ -70,38 +70,17 @@ pub fn generate(
     let field_idents_dup: Vec<Ident> = fields.iter().map(|f| Ident::from(f.as_str())).collect();
     let type_idents: Vec<Ident> = types.iter().map(|t| Ident::from(t.to_lowercase())).collect();
 
-    let default = quote!{
-        impl Default for #name {
-            fn default() -> #name {
-                #name {
-                    #( #field_idents: Default::default() ),*
-                }
-            }
-        }
-    };
-
     quote! {
         #rule_enum
         #parser_impl
-        #default
 
         impl #name {
             fn create(le: bool, bytes: &[u8]) -> #name {
-                let mut d: #name = Default::default();
-                let mut pos: usize = 0;
+                let mut vec = bytes.to_vec();
 
-                // match and convert
-                // this is like a for loop
-                #(match #fields {
-                    #fields_dup => {
-                        let (val, new_pos) = ::pest::reader::#type_idents(le, bytes, pos);
-                        d.#field_idents_dup = val;
-                        pos = new_pos;
-                    },
-                    _ => println!("Unknown field")
-                })*
-
-                d
+                #name {
+                    #(#field_idents: ::pest::reader::#type_idents(le, &mut vec)),*,
+                }
             }
 
             fn parse_and_create<'i>(

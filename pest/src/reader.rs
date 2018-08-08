@@ -7,112 +7,120 @@ static SIZE_32: usize = 4;
 static SIZE_64: usize = 8;
 static SIZE_BOOL: usize = 1;
 
-pub fn i8(_le: bool, input: &[u8], pos: usize) -> (i8, usize) {
-	(input[pos] as i8, SIZE_8)
+pub fn i8(_le: bool, input: &mut Vec<u8>) -> i8 {
+	input.remove(0) as i8
 }
 
-pub fn u8(_le: bool, input: &[u8], pos: usize) -> (u8, usize) {
-	(input[pos], SIZE_8)
+pub fn u8(_le: bool, input: &mut Vec<u8>) -> u8 {
+	input.remove(0)
 }
 
-pub fn i16(le: bool, input: &[u8], pos: usize) -> (i16, usize) {
-	let val = if le {
-		LittleEndian::read_i16(&input[pos..pos+SIZE_16])
+pub fn i16(le: bool, input: &mut Vec<u8>) -> i16 {
+	let val: Vec<u8> = input.drain(0..SIZE_16).collect();
+	let slice = val.as_slice();
+
+	if le {
+		LittleEndian::read_i16(slice)
 	} else {
-		BigEndian::read_i16(&input[pos..pos+SIZE_16])
-	};
-
-	(val, SIZE_16)
+		BigEndian::read_i16(slice)
+	}
 }
 
-pub fn u16(le: bool, input: &[u8], pos: usize) -> (u16, usize) {
-	let val = if le {
-		LittleEndian::read_u16(&input[pos..pos+SIZE_16])
-	} else {
-		BigEndian::read_u16(&input[pos..pos+SIZE_16])
-	};
+pub fn u16(le: bool, input: &mut Vec<u8>) -> u16 {
+	let val: Vec<u8> = input.drain(0..SIZE_16).collect();
+	let slice = val.as_slice();
 
-	(val, SIZE_16)
+	if le {
+		LittleEndian::read_u16(slice)
+	} else {
+		BigEndian::read_u16(slice)
+	}
 }
 
-pub fn i32(le: bool, input: &[u8], pos: usize) -> (i32, usize) {
-	let val = if le {
-		LittleEndian::read_i32(&input[pos..pos+SIZE_32])
-	} else {
-		BigEndian::read_i32(&input[pos..pos+SIZE_32])
-	};
+pub fn i32(le: bool, input: &mut Vec<u8>) -> i32 {
+	let val: Vec<u8> = input.drain(0..SIZE_32).collect();
+	let slice = val.as_slice();
 
-	(val, SIZE_32)
+	if le {
+		LittleEndian::read_i32(slice)
+	} else {
+		BigEndian::read_i32(slice)
+	}
 }
 
-pub fn u32(le: bool, input: &[u8], pos: usize) -> (u32, usize) {
-	let val = if le {
-		LittleEndian::read_u32(&input[pos..pos+SIZE_32])
-	} else {
-		BigEndian::read_u32(&input[pos..pos+SIZE_32])
-	};
+pub fn u32(le: bool, input: &mut Vec<u8>) -> u32 {
+	let val: Vec<u8> = input.drain(0..SIZE_32).collect();
+	let slice = val.as_slice();
 
-	(val, SIZE_32)
+	if le {
+		LittleEndian::read_u32(slice)
+	} else {
+		BigEndian::read_u32(slice)
+	}
 }
 
-pub fn i64(le: bool, input: &[u8], pos: usize) -> (i64, usize) {
-	let val = if le {
-		LittleEndian::read_i64(&input[pos..pos+SIZE_64])
-	} else {
-		BigEndian::read_i64(&input[pos..pos+SIZE_64])
-	};
+pub fn i64(le: bool, input: &mut Vec<u8>) -> i64 {
+	let val: Vec<u8> = input.drain(0..SIZE_64).collect();
+	let slice = val.as_slice();
 
-	(val, SIZE_64)
+	if le {
+		LittleEndian::read_i64(slice)
+	} else {
+		BigEndian::read_i64(slice)
+	}
 }
 
-pub fn u64(le: bool, input: &[u8], pos: usize) -> (u64, usize) {
-	let val = if le {
-		LittleEndian::read_u64(&input[pos..pos+SIZE_64])
-	} else {
-		BigEndian::read_u64(&input[pos..pos+SIZE_64])
-	};
+pub fn u64(le: bool, input: &mut Vec<u8>) -> u64 {
+	let val: Vec<u8> = input.drain(0..SIZE_64).collect();
+	let slice = val.as_slice();
 
-	(val, SIZE_64)
+	if le {
+		LittleEndian::read_u64(slice)
+	} else {
+		BigEndian::read_u64(slice)
+	}
 }
 
 // TODO
-/*pub fn isize(le: bool, input: &[u8], pos: usize) -> (isize, usize) {
+/*pub fn isize(le: bool, input: &mut Vec<u8>) -> isize {
 
 }
 
-pub fn usize(le: bool, input: &[u8], pos: usize) -> (usize, usize) {
+pub fn usize(le: bool, input: &mut Vec<u8>) -> usize {
 
 }*/
 
-pub fn f32(le: bool, input: &[u8], pos: usize) -> (f32, usize) {
-	let val = if le {
-		LittleEndian::read_f32(&input[pos..pos+SIZE_32])
-	} else {
-		BigEndian::read_f32(&input[pos..pos+SIZE_32])
-	};
+pub fn f32(le: bool, input: &mut Vec<u8>) -> f32 {
+	let val: Vec<u8> = input.drain(0..SIZE_32).collect();
+	let slice = val.as_slice();
 
-	(val, SIZE_32)
+	if le {
+		LittleEndian::read_f32(slice)
+	} else {
+		BigEndian::read_f32(slice)
+	}
 }
 
-pub fn f64(le: bool, input: &[u8], pos: usize) -> (f64, usize) {
-	let val = if le {
-		LittleEndian::read_f64(&input[pos..pos+SIZE_64])
-	} else {
-		BigEndian::read_f64(&input[pos..pos+SIZE_64])
-	};
+pub fn f64(le: bool, input: &mut Vec<u8>) -> f64 {
+	let val: Vec<u8> = input.drain(0..SIZE_64).collect();
+	let slice = val.as_slice();
 
-	(val, SIZE_64)
+	if le {
+		LittleEndian::read_f64(slice)
+	} else {
+		BigEndian::read_f64(slice)
+	}
 }
 
-pub fn bool(_le: bool, input: &[u8], pos: usize) -> (bool, usize) {
-	(input[pos] == 1, SIZE_BOOL)
+pub fn bool(_le: bool, input: &mut Vec<u8>) -> bool {
+	input.remove(0) == 1
 }
 
 // TODO: DRY
-pub fn char(_le: bool, input: &[u8], pos: usize) -> (char, usize) {
+pub fn char(_le: bool, input: &mut Vec<u8>) -> char {
 	let chr = {
         // Cannot actually cause undefined behavior.
-        let slice = unsafe { str::from_utf8_unchecked(&input[pos..]) };
+        let slice = unsafe { str::from_utf8_unchecked(&input[..]) };
 
         if let Some(c) = slice.chars().next() {
             Some(c)
@@ -123,7 +131,8 @@ pub fn char(_le: bool, input: &[u8], pos: usize) -> (char, usize) {
 
     match chr {
         Some(chr) => {
-            (chr, chr.len_utf8())
+			input.drain(0..chr.len_utf8());
+            chr
         }
         None => panic!("Could not decode char")
     }
