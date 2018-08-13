@@ -272,37 +272,30 @@ use proc_macro::TokenStream;
 use syn::{DeriveInput, Generics, Ident};
 use pest_meta::ast::{Expr, Rule as AstRule, RuleType};
 
+mod builtins;
+
 #[macro_use]
-mod macros;
 mod generator;
 
 use pest_meta::optimizer;
 
+const PRIMITIVES: &'static [&'static str] = &["i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "isize", "usize", "f32", "f64", "bool", "char"];
+
 #[proc_macro_derive(Parser, attributes(grammar))]
 pub fn derive_parser(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = syn::parse(input).unwrap();
-    let (name, generics, fields, types, expr) = parse_derive(ast);
+    let (name, generics, fields, types, defaults, expr) = parse_derive(ast);
 
     let ast = vec![
-        AstRule{
-            name: "t".to_string(),
+        AstRule {
+            name: name.to_string(),
             ty: RuleType::Normal,
             expr: expr
         }
     ];
 
-    // get defaults from types
-    // TODO: this is dumb
-    let mut defaults_string: Vec<String> = Vec::new();
-
-    for t in types.iter() {
-        if !defaults_string.contains(&t) {
-            defaults_string.push(t.clone());
-        }
-    }
-
     // String to &str
-    let defaults = defaults_string.iter().map(|s| &**s).collect();
+    let defaults = defaults.iter().map(|s| &**s).collect();
 
     let optimized = optimizer::optimize(ast);
     let generated = generator::generate(name, &generics, optimized, defaults, fields, types);
@@ -310,12 +303,15 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     generated.into()
 }
 
-fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Vec<String>, Vec<String>, Expr) {
+fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Vec<String>, Vec<String>, Vec<String>, Expr) {
     let name = ast.ident;
     let generics = ast.generics;
 
     let mut field_idents = Vec::new();
     let mut types = Vec::new();
+    let mut defaults = Vec::new();
+
+    let primitives: Vec<String> = PRIMITIVES.to_vec().iter().map(|p| (*p).to_string()).collect();
 
     if let syn::Data::Struct(ref data) = ast.data {
         if let syn::Fields::Named(ref fields) = data.fields {
@@ -328,7 +324,13 @@ fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Vec<String>, Vec<String>,
 
                 // get the type
                 if let syn::Type::Path(ref path) = f.ty {
-                    types.push(path.path.segments[0].ident.to_string().to_uppercase());
+                    let t = path.path.segments[0].ident.to_string();
+
+                    if primitives.contains(&t) && !defaults.contains(&t.to_uppercase()) {
+                        defaults.push(t.to_uppercase());
+                    }
+
+                    types.push(t);
                 }
             }
         }
@@ -336,17 +338,20 @@ fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Vec<String>, Vec<String>,
 
     let sequence = construct_sequence(&mut types.to_vec());
 
-    (name, generics, field_idents, types, sequence)
+    (name, generics, field_idents, types, defaults, sequence)
 }
 
 fn construct_sequence(types: &mut Vec<String>) -> Expr {
     if types.len() == 1 {
-        Expr::Ident(types.remove(0))
+        Expr::Ident(types.remove(0).to_uppercase())
     } else {
-        let mut expr = Expr::Seq(Box::new(Expr::Ident(types.remove(0))), Box::new(Expr::Ident(types.remove(0))));
+        let b0 = Box::new(Expr::Ident(types.remove(0).to_uppercase()));
+        let b1 = Box::new(Expr::Ident(types.remove(0).to_uppercase()));
+        let mut expr = Expr::Seq(b0, b1);
 
         for t in types {
-            expr = Expr::Seq(Box::new(expr), Box::new(Expr::Ident(t.to_string())));
+            let b = Box::new(Expr::Ident(t.to_uppercase()));
+            expr = Expr::Seq(Box::new(expr), b);
         }
 
         expr

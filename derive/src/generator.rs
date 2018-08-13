@@ -15,6 +15,8 @@ use syn::{Generics, Ident};
 use pest_meta::ast::*;
 use pest_meta::optimizer::*;
 
+use builtins;
+
 pub fn generate(
     name: Ident,
     generics: &Generics,
@@ -25,70 +27,93 @@ pub fn generate(
 ) -> Tokens {
     let uses_eoi = defaults.iter().any(|name| *name == "EOI");
 
-    let builtins = generate_builtin_rules();
-    let rule_enum = generate_enum(&rules, uses_eoi);
-    let patterns = generate_patterns(&rules, uses_eoi);
-    let skip = generate_skip(&rules);
+    let mut rules_string = name.to_string();
+    rules_string.push_str("Rule");
+    let rules_enum_ident = Ident::from(rules_string);
 
-    let mut rules: Vec<_> = rules.into_iter().map(|rule| generate_rule(rule)).collect();
+    let builtins = generate_builtin_rules(rules_enum_ident);
+    let rule_enum = generate_enum(rules_enum_ident, &rules, uses_eoi);
+    let skip = generate_skip(rules_enum_ident, &rules);
+
+    let rule_ident = Ident::from(rules[0].name.as_str());
+
+    let mut rules: Vec<_> = rules.into_iter().map(|rule| generate_rule(rules_enum_ident, rule)).collect();
+
     rules.extend(
-        defaults
-            .into_iter()
-            .map(|name| builtins.get(name).unwrap().clone())
+        defaults.iter().map(|d| {
+            builtins.get(d).unwrap().clone()
+        })
+    );
+
+    rules.extend(
+        types.iter().map(|t| {
+            let upper = t.to_uppercase();
+            // primitive or struct?
+            if !defaults.contains(&upper.as_str()) {
+                let ident = Ident::from(upper);
+                quote! {
+                    #[inline]
+                    #[allow(dead_code, non_snake_case, unused_variables)]
+                    pub fn #ident(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+                        Ok(state)
+                    }
+                }
+            } else {
+                quote!{}
+            }
+        })
     );
 
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let parser_impl = quote! {
-        impl #impl_generics ::pest::Parser<Rule> for #name #ty_generics #where_clause {
+        impl #impl_generics ::pest::Parser<#rules_enum_ident> for #name #ty_generics #where_clause {
             fn parse<'i>(
-                rule: Rule,
                 input: &'i [u8]
             ) -> ::std::result::Result<
-                ::pest::iterators::Pairs<'i, Rule>,
-                ::pest::error::Error<Rule>
+                ::pest::iterators::Pairs<'i, #rules_enum_ident>,
+                ::pest::error::Error<#rules_enum_ident>
             > {
                 mod rules {
-                    use super::Rule;
+                    use super::#rules_enum_ident;
 
                     #( #rules )*
                     #skip
                 }
 
                 ::pest::state(input, |state| {
-                    match rule {
-                        #patterns
-                    }
+                    rules::#rule_ident(state)
                 })
             }
         }
     };
 
-    // please forgive me
-    let fields_dup: Vec<String> = fields.iter().map(|f| f.to_string()).collect();
     let field_idents: Vec<Ident> = fields.iter().map(|f| Ident::from(f.as_str())).collect();
-    let field_idents_dup: Vec<Ident> = fields.iter().map(|f| Ident::from(f.as_str())).collect();
-    let type_idents: Vec<Ident> = types.iter().map(|t| Ident::from(t.to_lowercase())).collect();
+    let casters: Vec<Tokens> = types.iter().map(|t| {
+        let t_ident = Ident::from(t.as_str());
+        if defaults.contains(&t.to_uppercase().as_str()) {
+            quote!{::pest::reader::#t_ident(le, bytes)}
+        } else {
+            quote!{#t_ident::parse_and_create(le, bytes)}
+        }
+    }).collect();
 
     quote! {
         #rule_enum
         #parser_impl
 
         impl #name {
-            fn create(le: bool, bytes: &[u8]) -> #name {
-                let mut vec = bytes.to_vec();
-
+            fn create(le: bool, bytes: &mut Vec<u8>) -> #name {
                 #name {
-                    #(#field_idents: ::pest::reader::#type_idents(le, &mut vec)),*,
+                    #(#field_idents: #casters),*,
                 }
             }
 
             fn parse_and_create<'i>(
-                rule: Rule,
-                input: &'i [u8],
-                le: bool
+                le: bool,
+                input: &'i mut Vec<u8>
             ) -> #name {
-                #name::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
+                #name::parse(input.as_slice()).unwrap_or_else(|e| panic!("{}", e));
                 #name::create(le, input)
             }
         }
@@ -96,84 +121,102 @@ pub fn generate(
 }
 
 // Note: All builtin rules should be validated as pest keywords in meta/src/validator.rs.
-fn generate_builtin_rules() -> HashMap<&'static str, Tokens> {
+fn generate_builtin_rules(rules_enum_ident: Ident) -> HashMap<&'static str, Tokens> {
     let mut builtins = HashMap::new();
+    // force ref to go out of scope
+    {
+        let builtins_ref = &mut builtins;
 
-    insert_public_builtin!(
-        builtins,
-        EOI,
-        state.rule(Rule::EOI, |state| state.end_of_input())
-    );
-    insert_builtin!(builtins, ANY, state.skip(1));
-    insert_builtin!(builtins, SOI, state.start_of_input());
-    insert_builtin!(builtins, PEEK, state.stack_peek());
-    insert_builtin!(builtins, PEEK_ALL, state.stack_match_peek());
-    insert_builtin!(builtins, POP, state.stack_pop());
-    insert_builtin!(builtins, POP_ALL, state.stack_match_pop());
-    insert_builtin!(builtins, DROP, state.stack_drop());
+        builtins::insert_public_builtin(
+            rules_enum_ident,
+            builtins_ref,
+            "EOI",
+            quote!{state.rule(#rules_enum_ident::EOI, |state| state.end_of_input())}
+        );
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "ANY", quote!{state.skip(1)});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "SOI", quote!{state.start_of_input()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "PEEK", quote!{state.stack_peek()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "PEEK_ALL", quote!{state.stack_match_peek()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "POP", quote!{state.stack_pop()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "POP_ALL", quote!{state.stack_match_pop()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "DROP", quote!{state.stack_drop()});
 
-    insert_builtin!(builtins, I8, state.match_i8());
-    insert_builtin!(builtins, U8, state.match_u8());
-    insert_builtin!(builtins, I16, state.match_i16());
-    insert_builtin!(builtins, U16, state.match_u16());
-    insert_builtin!(builtins, I32, state.match_i32());
-    insert_builtin!(builtins, U32, state.match_u32());
-    insert_builtin!(builtins, I64, state.match_i64());
-    insert_builtin!(builtins, U64, state.match_u64());
-    insert_builtin!(builtins, ISIZE, state.match_isize());
-    insert_builtin!(builtins, USIZE, state.match_usize());
-    insert_builtin!(builtins, F32, state.match_f32());
-    insert_builtin!(builtins, F64, state.match_f64());
-    insert_builtin!(builtins, BOOL, state.match_bool());
-    insert_builtin!(builtins, CHAR, state.match_char());
-    insert_builtin!(builtins, LE, state.set_le());
-    insert_builtin!(builtins, BE, state.set_be());
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "I8", quote!{state.match_i8()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "U8", quote!{state.match_u8()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "I16", quote!{state.match_i16()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "U16", quote!{state.match_u16()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "I32", quote!{state.match_i32()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "U32", quote!{state.match_u32()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "I64", quote!{state.match_i64()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "U64", quote!{state.match_u64()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "ISIZE", quote!{state.match_isize()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "USIZE", quote!{state.match_usize()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "F32", quote!{state.match_f32()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "F64", quote!{state.match_f64()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "BOOL", quote!{state.match_bool()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "CHAR", quote!{state.match_char()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "LE", quote!{state.set_le()});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "BE", quote!{state.set_be()});
 
-    insert_builtin!(builtins, DIGIT, state.match_range('0'..'9'));
-    insert_builtin!(builtins, NONZERO_DIGIT, state.match_range('1'..'9'));
-    insert_builtin!(builtins, BIN_DIGIT, state.match_range('0'..'1'));
-    insert_builtin!(builtins, OCT_DIGIT, state.match_range('0'..'7'));
-    insert_builtin!(
-        builtins,
-        HEX_DIGIT,
-        state.match_range('0'..'9')
-            .or_else(|state| state.match_range('a'..'f'))
-            .or_else(|state| state.match_range('A'..'F'))
-    );
-    insert_builtin!(builtins, ALPHA_LOWER, state.match_range('a'..'z'));
-    insert_builtin!(builtins, ALPHA_UPPER, state.match_range('A'..'Z'));
-    insert_builtin!(
-        builtins,
-        ALPHA,
-        state.match_range('a'..'z')
-            .or_else(|state| state.match_range('A'..'Z'))
-    );
-    insert_builtin!(
-        builtins,
-        ALPHANUMERIC,
-        state.match_range('a'..'z')
-            .or_else(|state| state.match_range('A'..'Z'))
-            .or_else(|state| state.match_range('0'..'9'))
-    );
-    insert_builtin!(builtins, ASCII, state.match_range('\x00'..'\x7f'));
-    insert_builtin!(
-        builtins,
-        NEWLINE,
-        state.match_string("\n")
-            .or_else(|state| state.match_string("\r\n"))
-            .or_else(|state| state.match_string("\r"))
-    );
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "DIGIT", quote!{state.match_range('0'..'9')});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "NONZERO_DIGIT", quote!{state.match_range('1'..'9')});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "BIN_DIGIT", quote!{state.match_range('0'..'1')});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "OCT_DIGIT", quote!{state.match_range('0'..'7')});
+        builtins::insert_builtin(
+            rules_enum_ident,
+            builtins_ref,
+            "HEX_DIGIT",
+            quote! {
+                state.match_range('0'..'9')
+                .or_else(|state| state.match_range('a'..'f'))
+                .or_else(|state| state.match_range('A'..'F'))
+            }
+        );
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "ALPHA_LOWER", quote!{state.match_range('a'..'z')});
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "ALPHA_UPPER", quote!{state.match_range('A'..'Z')});
+        builtins::insert_builtin(
+            rules_enum_ident,
+            builtins_ref,
+            "ALPHA",
+            quote! {
+                state.match_range('a'..'z')
+                .or_else(|state| state.match_range('A'..'Z'))
+            }
+        );
+        builtins::insert_builtin(
+            rules_enum_ident,
+            builtins_ref,
+            "ALPHANUMERIC",
+            quote! {
+                state.match_range('a'..'z')
+                .or_else(|state| state.match_range('A'..'Z'))
+                .or_else(|state| state.match_range('0'..'9'))
+            }
+        );
+        builtins::insert_builtin(rules_enum_ident, builtins_ref, "ASCII", quote!{state.match_range('\x00'..'\x7f')});
+        builtins::insert_builtin(
+            rules_enum_ident,
+            builtins_ref,
+            "NEWLINE",
+            quote! {
+                state.match_string("\n")
+                .or_else(|state| state.match_string("\r\n"))
+                .or_else(|state| state.match_string("\r"))
+            }
+        );
+    }
 
     builtins
 }
 
-fn generate_enum(rules: &Vec<OptimizedRule>, uses_eoi: bool) -> Tokens {
+fn generate_enum(rules_enum_ident: Ident, rules: &Vec<OptimizedRule>, uses_eoi: bool) -> Tokens {
     let rules = rules.iter().map(|rule| Ident::from(rule.name.as_str()));
+
     if uses_eoi {
         quote! {
             #[allow(dead_code, non_camel_case_types)]
             #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            pub enum Rule {
+            pub enum #rules_enum_ident {
                 EOI,
                 #( #rules ),*
             }
@@ -182,36 +225,14 @@ fn generate_enum(rules: &Vec<OptimizedRule>, uses_eoi: bool) -> Tokens {
         quote! {
             #[allow(dead_code, non_camel_case_types)]
             #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            pub enum Rule {
+            pub enum #rules_enum_ident {
                 #( #rules ),*
             }
         }
     }
 }
 
-fn generate_patterns(rules: &Vec<OptimizedRule>, uses_eoi: bool) -> Tokens {
-    let mut rules: Vec<Tokens> = rules
-        .iter()
-        .map(|rule| {
-            let rule = Ident::from(rule.name.as_str());
-            quote! {
-                Rule::#rule => rules::#rule(state)
-            }
-        })
-        .collect();
-
-    if uses_eoi {
-        rules.push(quote! {
-            Rule::EOI => rules::EOI(state)
-        });
-    }
-
-    quote! {
-        #( #rules ),*
-    }
-}
-
-fn generate_rule(rule: OptimizedRule) -> Tokens {
+fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
     let name = Ident::from(rule.name);
     let expr = if { rule.ty == RuleType::Atomic || rule.ty == RuleType::CompoundAtomic } {
         generate_expr_atomic(rule.expr)
@@ -233,8 +254,8 @@ fn generate_rule(rule: OptimizedRule) -> Tokens {
         RuleType::Normal => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<Rule>>) -> ::pest::ParseResult<Box<::pest::ParserState<Rule>>> {
-                state.rule(Rule::#name, |state| {
+            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+                state.rule(#rules_enum_ident::#name, |state| {
                     #expr
                 })
             }
@@ -242,15 +263,15 @@ fn generate_rule(rule: OptimizedRule) -> Tokens {
         RuleType::Silent => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<Rule>>) -> ::pest::ParseResult<Box<::pest::ParserState<Rule>>> {
+            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
                 #expr
             }
         },
         RuleType::Atomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<Rule>>) -> ::pest::ParseResult<Box<::pest::ParserState<Rule>>> {
-                state.rule(Rule::#name, |state| {
+            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+                state.rule(#rules_enum_ident::#name, |state| {
                     state.atomic(::pest::Atomicity::Atomic, |state| {
                         #expr
                     })
@@ -260,9 +281,9 @@ fn generate_rule(rule: OptimizedRule) -> Tokens {
         RuleType::CompoundAtomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<Rule>>) -> ::pest::ParseResult<Box<::pest::ParserState<Rule>>> {
+            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
                 state.atomic(::pest::Atomicity::CompoundAtomic, |state| {
-                    state.rule(Rule::#name, |state| {
+                    state.rule(#rules_enum_ident::#name, |state| {
                         #expr
                     })
                 })
@@ -271,9 +292,9 @@ fn generate_rule(rule: OptimizedRule) -> Tokens {
         RuleType::NonAtomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<Rule>>) -> ::pest::ParseResult<Box<::pest::ParserState<Rule>>> {
+            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
                 state.atomic(::pest::Atomicity::NonAtomic, |state| {
-                    state.rule(Rule::#name, |state| {
+                    state.rule(#rules_enum_ident::#name, |state| {
                         #expr
                     })
                 })
@@ -282,52 +303,61 @@ fn generate_rule(rule: OptimizedRule) -> Tokens {
     }
 }
 
-fn generate_skip(rules: &Vec<OptimizedRule>) -> Tokens {
+fn generate_skip(rules_enum_ident: Ident, rules: &Vec<OptimizedRule>) -> Tokens {
     let whitespace = rules.iter().any(|rule| rule.name == "WHITESPACE");
     let comment = rules.iter().any(|rule| rule.name == "COMMENT");
 
     match (whitespace, comment) {
-        (false, false) => generate_rule!(skip, Ok(state)),
-        (true, false) => generate_rule!(
-            skip,
-            if state.atomicity() == ::pest::Atomicity::NonAtomic {
-                state.repeat(|state| {
-                    WHITESPACE(state)
-                })
-            } else {
-                Ok(state)
-            }
-        ),
-        (false, true) => generate_rule!(
-            skip,
-            if state.atomicity() == ::pest::Atomicity::NonAtomic {
-                state.repeat(|state| {
-                    COMMENT(state)
-                })
-            } else {
-                Ok(state)
-            }
-        ),
-        (true, true) => generate_rule!(
-            skip,
-            if state.atomicity() == ::pest::Atomicity::NonAtomic {
-                state.sequence(|state| {
+        (false, false) => builtins::generate_rule(rules_enum_ident, "skip", quote!{Ok(state)}),
+        (true, false) => builtins::generate_rule(
+            rules_enum_ident,
+            "skip",
+            quote! {
+                if state.atomicity() == ::pest::Atomicity::NonAtomic {
                     state.repeat(|state| {
                         WHITESPACE(state)
-                    }).and_then(|state| {
+                    })
+                } else {
+                    Ok(state)
+                }
+            }
+        ),
+        (false, true) => builtins::generate_rule(
+            rules_enum_ident,
+            "skip",
+            quote! {
+                if state.atomicity() == ::pest::Atomicity::NonAtomic {
+                    state.repeat(|state| {
+                        COMMENT(state)
+                    })
+                } else {
+                    Ok(state)
+                }
+            }
+        ),
+        (true, true) => builtins::generate_rule(
+            rules_enum_ident,
+            "skip",
+            quote! {
+                if state.atomicity() == ::pest::Atomicity::NonAtomic {
+                    state.sequence(|state| {
                         state.repeat(|state| {
-                            state.sequence(|state| {
-                                COMMENT(state).and_then(|state| {
-                                    state.repeat(|state| {
-                                        WHITESPACE(state)
+                            WHITESPACE(state)
+                        }).and_then(|state| {
+                            state.repeat(|state| {
+                                state.sequence(|state| {
+                                    COMMENT(state).and_then(|state| {
+                                        state.repeat(|state| {
+                                            WHITESPACE(state)
+                                        })
                                     })
                                 })
                             })
                         })
                     })
-                })
-            } else {
-                Ok(state)
+                } else {
+                    Ok(state)
+                }
             }
         )
     }
