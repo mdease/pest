@@ -27,6 +27,14 @@ pub fn generate(
 ) -> Tokens {
     let uses_eoi = defaults.iter().any(|name| *name == "EOI");
 
+    let mut types_set: Vec<String> = Vec::new();
+
+    for t in &types {
+        if !types_set.contains(&t) {
+            types_set.push(t.to_string());
+        }
+    }
+
     let mut rules_string = name.to_string();
     rules_string.push_str("Rule");
     let rules_enum_ident = Ident::from(rules_string);
@@ -40,26 +48,21 @@ pub fn generate(
     let mut rules: Vec<_> = rules.into_iter().map(|rule| generate_rule(rules_enum_ident, rule)).collect();
 
     rules.extend(
-        defaults.iter().map(|d| {
-            builtins.get(d).unwrap().clone()
-        })
-    );
-
-    rules.extend(
-        types.iter().map(|t| {
+        types_set.iter().map(|t| {
             let upper = t.to_uppercase();
             // primitive or struct?
-            if !defaults.contains(&upper.as_str()) {
-                let ident = Ident::from(upper);
+            if defaults.contains(&upper.as_str()) {
+                builtins.get(&upper.as_str()).unwrap().clone()
+            } else {
+                let upper_ident = Ident::from(upper);
+                let ident = Ident::from(t.as_str());
                 quote! {
                     #[inline]
                     #[allow(dead_code, non_snake_case, unused_variables)]
-                    pub fn #ident(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
-                        Ok(state)
+                    pub fn #upper_ident(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+                        state.skip(#ident::size())
                     }
                 }
-            } else {
-                quote!{}
             }
         })
     );
@@ -88,6 +91,23 @@ pub fn generate(
         }
     };
 
+    // calculate struct size
+    let mut size: usize = 0;
+    let mut struct_size = Vec::new();
+
+    for t in &types {
+        if defaults.contains(&t.to_uppercase().as_str()) {
+            size += ::pest::reader::size(&t.as_str());
+        } else {
+            let t_ident = Ident::from(t.as_str());
+            let addition = quote! {
+                + #t_ident::size()
+            };
+            struct_size.push(addition);
+        }
+    }
+
+    // assign a casting function to each type
     let field_idents: Vec<Ident> = fields.iter().map(|f| Ident::from(f.as_str())).collect();
     let casters: Vec<Tokens> = types.iter().map(|t| {
         let t_ident = Ident::from(t.as_str());
@@ -107,6 +127,10 @@ pub fn generate(
                 #name {
                     #(#field_idents: #casters),*,
                 }
+            }
+
+            fn size() -> usize {
+                #size #(#struct_size)*
             }
 
             fn parse_and_create<'i>(

@@ -7,6 +7,24 @@ static SIZE_32: usize = 4;
 static SIZE_64: usize = 8;
 static SIZE_BOOL: usize = 1;
 
+// TODO: char, usize, isize
+pub fn size(ty: &str) -> usize {
+	match ty {
+		"i8" => SIZE_8,
+		"u8" => SIZE_8,
+		"i16" => SIZE_16,
+		"u16" => SIZE_16,
+		"i32" => SIZE_32,
+		"u32" => SIZE_32,
+		"i64" => SIZE_64,
+		"u64" => SIZE_64,
+		"f32" => SIZE_32,
+		"f64" => SIZE_64,
+		"bool" => SIZE_BOOL,
+		_ => 0
+	}
+}
+
 pub fn i8(_le: bool, input: &mut Vec<u8>) -> i8 {
 	input.remove(0) as i8
 }
