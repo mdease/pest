@@ -140,6 +140,17 @@ pub fn generate(
                 #name::parse(input.as_slice()).unwrap_or_else(|e| panic!("{}", e));
                 #name::create(le, input)
             }
+
+            fn validate(
+                le: bool,
+                ptr: *const u8
+            ) {
+                unsafe {
+                    let slice = std::slice::from_raw_parts(ptr, #name::size());
+
+                    #name::parse_and_create(le, &mut slice.to_vec());
+                }
+            }
         }
     }
 }
