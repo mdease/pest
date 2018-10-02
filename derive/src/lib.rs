@@ -268,6 +268,13 @@ extern crate proc_macro;
 extern crate quote;
 extern crate syn;
 
+use std::env;
+use std::ffi::OsStr;
+use std::fs::File;
+use std::io::{self, Read};
+use std::path::Path;
+use std::str::FromStr;
+
 use proc_macro::TokenStream;
 use syn::{DeriveInput, Generics, Ident};
 use pest_meta::ast::{Expr, Rule as AstRule, RuleType};
@@ -286,6 +293,40 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = syn::parse(input).unwrap();
     let (name, generics, fields, types, defaults, expr) = parse_derive(ast);
 
+    // read the config
+    let root = env::var("CARGO_MANIFEST_DIR").unwrap_or(".".into());
+    let path = Path::new(&root).join("pest.conf");
+    let file_name = match path.file_name() {
+        Some(file_name) => file_name,
+        None => OsStr::new("")
+    };
+
+    // architecture-specific
+    // defaults
+    let mut is_little_endian = true;
+    let mut arch_size: u16 = 32;
+
+    if !file_name.is_empty() {
+        let data = match read_file(&path) {
+            Ok(data) => data,
+            Err(error) => String::new()
+        };
+
+        // todo, there's probably a better way to do this
+        if data.len() > 0 {
+            let lines: Vec<&str> = data.split("\n").collect();
+
+            for l in lines {
+                let tokens: Vec<&str> = data.split("=").collect();
+                match tokens[0] {
+                    "is_little_endian" => { is_little_endian = FromStr::from_str(tokens[1]).unwrap() },
+                    "arch_size" => { arch_size = u16::from_str(tokens[1]).unwrap() },
+                    _ => {}
+                }
+            }
+        }
+    }
+
     let ast = vec![
         AstRule {
             name: name.to_string(),
@@ -301,6 +342,13 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     let generated = generator::generate(name, &generics, optimized, defaults, fields, types);
 
     generated.into()
+}
+
+fn read_file<P: AsRef<Path>>(path: P) -> io::Result<String> {
+    let mut file = File::open(path.as_ref())?;
+    let mut string = String::new();
+    file.read_to_string(&mut string)?;
+    Ok(string)
 }
 
 fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Vec<String>, Vec<String>, Vec<String>, Expr) {
