@@ -305,18 +305,3 @@ impl<'i, R: Hash> Hash for Pair<'i, R> {
         self.start.hash(state);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use macros::tests::*;
-    use parser::Parser;
-
-    #[test]
-    fn pair_into_inner() {
-        let pair = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap().next().unwrap(); // the tokens a(b())
-
-        let pairs = pair.into_inner(); // the tokens b()
-
-        assert_eq!(2, pairs.tokens().count());
-    }
-}

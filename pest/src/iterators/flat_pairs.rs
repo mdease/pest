@@ -142,32 +142,3 @@ impl<'i, R: Clone> Clone for FlatPairs<'i, R> {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::super::super::Parser;
-    use super::super::super::macros::tests::*;
-
-    #[test]
-    fn iter_for_flat_pairs() {
-        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
-
-        assert_eq!(
-            pairs.flatten().map(|p| p.as_rule()).collect::<Vec<Rule>>(),
-            vec![Rule::a, Rule::b, Rule::c]
-        );
-    }
-
-    #[test]
-    fn double_ended_iter_for_flat_pairs() {
-        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
-        assert_eq!(
-            pairs
-                .flatten()
-                .rev()
-                .map(|p| p.as_rule())
-                .collect::<Vec<Rule>>(),
-            vec![Rule::c, Rule::b, Rule::a]
-        );
-    }
-}

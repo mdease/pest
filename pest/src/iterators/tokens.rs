@@ -111,19 +111,3 @@ impl<'i, R: RuleType> fmt::Debug for Tokens<'i, R> {
         f.debug_list().entries(self.clone()).finish()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::Token;
-    use super::super::super::Parser;
-    use super::super::super::macros::tests::*;
-
-    #[test]
-    fn double_ended_iter_for_tokens() {
-        let pairs = AbcParser::parse(Rule::a, "abcde".as_bytes()).unwrap();
-        let mut tokens = pairs.clone().tokens().collect::<Vec<Token<Rule>>>();
-        tokens.reverse();
-        let reverse_tokens = pairs.tokens().rev().collect::<Vec<Token<Rule>>>();
-        assert_eq!(tokens, reverse_tokens);
-    }
-}
