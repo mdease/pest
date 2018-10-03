@@ -7,16 +7,8 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-extern crate maplit;
-#[cfg(test)]
-#[macro_use]
-extern crate pest;
-#[cfg(not(test))]
-extern crate pest;
-
 use std::fmt::Display;
 
-pub mod parser;
 pub mod ast;
 pub mod optimizer;
 
