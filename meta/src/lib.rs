@@ -13,15 +13,12 @@ extern crate maplit;
 extern crate pest;
 #[cfg(not(test))]
 extern crate pest;
-#[macro_use]
-extern crate pest_derive;
 
 use std::fmt::Display;
 
 pub mod parser;
 pub mod ast;
 pub mod optimizer;
-pub mod validator;
 
 pub fn unwrap_or_report<T, E>(result: Result<T, E>) -> T
 where
