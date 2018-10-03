@@ -3,6 +3,7 @@ members = [
     "derive",
     "meta",
     "pest",
+    "proc-macro2",
     "quote",
     "syn"
 ]
