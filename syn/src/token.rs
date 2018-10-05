@@ -135,34 +135,34 @@ macro_rules! token_punct_def {
             }
         }
 
-        impl ::std::default::Default for $name {
+        impl ::core::default::Default for $name {
             fn default() -> Self {
                 $name([Span::call_site(); $len])
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::fmt::Debug for $name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        impl ::core::fmt::Debug for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                 f.write_str(stringify!($name))
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::cmp::Eq for $name {}
+        impl ::core::cmp::Eq for $name {}
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::cmp::PartialEq for $name {
+        impl ::core::cmp::PartialEq for $name {
             fn eq(&self, _other: &$name) -> bool {
                 true
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::hash::Hash for $name {
+        impl ::core::hash::Hash for $name {
             fn hash<H>(&self, _state: &mut H)
             where
-                H: ::std::hash::Hasher,
+                H: ::core::hash::Hasher,
             {
             }
         }
@@ -208,34 +208,34 @@ macro_rules! token_keyword {
         /// [`Token!`]: index.html
         pub struct $name(pub Span);
 
-        impl ::std::default::Default for $name {
+        impl ::core::default::Default for $name {
             fn default() -> Self {
                 $name(Span::call_site())
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::fmt::Debug for $name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        impl ::core::fmt::Debug for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                 f.write_str(stringify!($name))
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::cmp::Eq for $name {}
+        impl ::core::cmp::Eq for $name {}
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::cmp::PartialEq for $name {
+        impl ::core::cmp::PartialEq for $name {
             fn eq(&self, _other: &$name) -> bool {
                 true
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::hash::Hash for $name {
+        impl ::core::hash::Hash for $name {
             fn hash<H>(&self, _state: &mut H)
             where
-                H: ::std::hash::Hasher,
+                H: ::core::hash::Hasher,
             {
             }
         }
@@ -272,34 +272,34 @@ macro_rules! token_delimiter {
         #[$doc]
         pub struct $name(pub Span);
 
-        impl ::std::default::Default for $name {
+        impl ::core::default::Default for $name {
             fn default() -> Self {
                 $name(Span::call_site())
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::fmt::Debug for $name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        impl ::core::fmt::Debug for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                 f.write_str(stringify!($name))
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::cmp::Eq for $name {}
+        impl ::core::cmp::Eq for $name {}
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::cmp::PartialEq for $name {
+        impl ::core::cmp::PartialEq for $name {
             fn eq(&self, _other: &$name) -> bool {
                 true
             }
         }
 
         #[cfg(feature = "extra-traits")]
-        impl ::std::hash::Hash for $name {
+        impl ::core::hash::Hash for $name {
             fn hash<H>(&self, _state: &mut H)
             where
-                H: ::std::hash::Hasher,
+                H: ::core::hash::Hasher,
             {
             }
         }
@@ -466,7 +466,7 @@ tokens! {
 /// See the [token module] documentation for details and examples.
 ///
 /// [token module]: token/index.html
-// Unfortunate duplication due to a rustdoc bug.
+// Unfortunate duplication due to a rucoreoc bug.
 // https://github.com/rust-lang/rust/issues/45939
 #[macro_export]
 #[cfg_attr(rustfmt, rustfmt_skip)]

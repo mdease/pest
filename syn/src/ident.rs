@@ -6,10 +6,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::borrow::Cow;
-use std::cmp::Ordering;
-use std::fmt::{self, Display};
-use std::hash::{Hash, Hasher};
+use alloc::borrow::Cow;
+use alloc::string::String;
+use core::cmp::Ordering;
+use core::fmt::{self, Display};
+use core::hash::{Hash, Hasher};
 
 use proc_macro2::Term;
 use unicode_xid::UnicodeXID;

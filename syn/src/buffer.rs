@@ -132,11 +132,13 @@ use proc_macro as pm;
 use proc_macro2::{Delimiter, Literal, Span, Term, TokenStream};
 use proc_macro2::{Group, Op, TokenTree};
 
-use std::marker::PhantomData;
-use std::ptr;
+use core::marker::PhantomData;
+use core::ptr;
+use alloc::vec::Vec;
+use alloc::boxed::Box;
 
 #[cfg(synom_verbose_trace)]
-use std::fmt::{self, Debug};
+use core::fmt::{self, Debug};
 
 /// Internal type which is used instead of `TokenTree` to represent a token tree
 /// within a `TokenBuffer`.

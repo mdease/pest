@@ -16,7 +16,7 @@ use token::{Brace, Bracket, Paren};
 use {parse_error, MacroDelimiter};
 
 #[cfg(feature = "extra-traits")]
-use std::hash::{Hash, Hasher};
+use core::hash::{Hash, Hasher};
 
 #[cfg(any(feature = "parsing", feature = "extra-traits"))]
 use proc_macro2::{Delimiter, TokenStream, TokenTree};

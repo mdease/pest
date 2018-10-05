@@ -6,9 +6,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cmp::Ordering;
-use std::fmt::{self, Display};
-use std::hash::{Hash, Hasher};
+use core::cmp::Ordering;
+use core::fmt::{self, Display};
+use core::hash::{Hash, Hasher};
 
 use proc_macro2::{Span, Term};
 use unicode_xid::UnicodeXID;

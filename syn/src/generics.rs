@@ -9,6 +9,8 @@
 use super::*;
 use punctuated::{Iter, IterMut, Punctuated};
 
+use alloc::vec::Vec;
+
 ast_struct! {
     /// Lifetimes and type parameters attached to a declaration of a function,
     /// enum, trait, etc.

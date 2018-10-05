@@ -9,12 +9,15 @@
 use super::*;
 use punctuated::Punctuated;
 
-use std::iter;
+use alloc::string::*;
+use alloc::str::*;
+use alloc::vec::Vec;
+use core::iter;
 
 use proc_macro2::{Delimiter, Spacing, TokenStream, TokenTree};
 
 #[cfg(feature = "extra-traits")]
-use std::hash::{Hash, Hasher};
+use core::hash::{Hash, Hasher};
 #[cfg(feature = "extra-traits")]
 use tt::TokenStreamHelper;
 

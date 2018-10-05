@@ -11,7 +11,7 @@ use proc_macro2::TokenStream;
 use token::{Brace, Bracket, Paren};
 
 #[cfg(feature = "extra-traits")]
-use std::hash::{Hash, Hasher};
+use core::hash::{Hash, Hasher};
 #[cfg(feature = "extra-traits")]
 use tt::TokenStreamHelper;
 

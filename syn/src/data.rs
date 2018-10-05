@@ -8,6 +8,8 @@
 
 use super::*;
 use punctuated::Punctuated;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 
 ast_struct! {
     /// An enum variant.

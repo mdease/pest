@@ -28,14 +28,15 @@
 //! ```
 
 #[cfg(feature = "extra-traits")]
-use std::fmt::{self, Debug};
+use core::fmt::{self, Debug};
 #[cfg(any(feature = "full", feature = "derive"))]
-use std::iter;
-use std::iter::FromIterator;
-use std::ops::{Index, IndexMut};
-use std::option;
-use std::slice;
-use std::vec;
+use core::iter;
+use core::iter::FromIterator;
+use core::ops::{Index, IndexMut};
+use core::option;
+use core::slice;
+use alloc::boxed::Box;
+use alloc::vec::{self, Vec};
 
 #[cfg(feature = "parsing")]
 use buffer::Cursor;

@@ -7,6 +7,7 @@
 // except according to those terms.
 
 use super::*;
+use alloc::vec::Vec;
 use punctuated::Punctuated;
 
 ast_struct! {

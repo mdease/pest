@@ -9,6 +9,7 @@
 use buffer::Cursor;
 use parse_error;
 use synom::PResult;
+use alloc::vec::Vec;
 
 /// Define a parser function with the signature expected by syn parser
 /// combinators.
@@ -185,10 +186,10 @@ macro_rules! call {
 macro_rules! map {
     ($i:expr, $submac:ident!( $($args:tt)* ), $g:expr) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((o, i)) =>
-                ::std::result::Result::Ok(($crate::parsers::invoke($g, o), i)),
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) =>
+                ::core::result::Result::Ok(($crate::parsers::invoke($g, o), i)),
         }
     };
 
@@ -234,9 +235,9 @@ pub fn invoke<T, R, F: FnOnce(T) -> R>(f: F, t: T) -> R {
 macro_rules! not {
     ($i:expr, $submac:ident!( $($args:tt)* )) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Ok(_) => $crate::parse_error(),
-            ::std::result::Result::Err(_) =>
-                ::std::result::Result::Ok(((), $i)),
+            ::core::result::Result::Ok(_) => $crate::parse_error(),
+            ::core::result::Result::Err(_) =>
+                ::core::result::Result::Ok(((), $i)),
         }
     };
 }
@@ -304,12 +305,12 @@ macro_rules! cond {
     ($i:expr, $cond:expr, $submac:ident!( $($args:tt)* )) => {
         if $cond {
             match $submac!($i, $($args)*) {
-                ::std::result::Result::Ok((o, i)) =>
-                    ::std::result::Result::Ok((::std::option::Option::Some(o), i)),
-                ::std::result::Result::Err(x) => ::std::result::Result::Err(x),
+                ::core::result::Result::Ok((o, i)) =>
+                    ::core::result::Result::Ok((::core::option::Option::Some(o), i)),
+                ::core::result::Result::Err(x) => ::core::result::Result::Err(x),
             }
         } else {
-            ::std::result::Result::Ok((::std::option::Option::None, $i))
+            ::core::result::Result::Ok((::core::option::Option::None, $i))
         }
     };
 
@@ -423,7 +424,7 @@ macro_rules! cond_reduce {
 ///
 /// /// Parses a module containing zero or more Rust items.
 /// ///
-/// /// Example: `mod m { type Result<T> = ::std::result::Result<T, MyError>; }`
+/// /// Example: `mod m { type Result<T> = ::core::result::Result<T, MyError>; }`
 /// struct SimpleMod {
 ///     mod_token: Token![mod],
 ///     name: Ident,
@@ -453,21 +454,21 @@ macro_rules! cond_reduce {
 macro_rules! many0 {
     ($i:expr, $submac:ident!( $($args:tt)* )) => {{
         let ret;
-        let mut res   = ::std::vec::Vec::new();
+        let mut res   = ::alloc::vec::Vec::new();
         let mut input = $i;
 
         loop {
             if input.eof() {
-                ret = ::std::result::Result::Ok((res, input));
+                ret = ::core::result::Result::Ok((res, input));
                 break;
             }
 
             match $submac!(input, $($args)*) {
-                ::std::result::Result::Err(_) => {
-                    ret = ::std::result::Result::Ok((res, input));
+                ::core::result::Result::Err(_) => {
+                    ret = ::core::result::Result::Ok((res, input));
                     break;
                 }
-                ::std::result::Result::Ok((o, i)) => {
+                ::core::result::Result::Ok((o, i)) => {
                     // loop trip must always consume (otherwise infinite loops)
                     if i == input {
                         ret = $crate::parse_error();
@@ -595,8 +596,8 @@ pub fn many0<T>(mut input: Cursor, f: fn(Cursor) -> PResult<T>) -> PResult<Vec<T
 macro_rules! switch {
     ($i:expr, $submac:ident!( $($args:tt)* ), $($p:pat => $subrule:ident!( $($args2:tt)* ))|* ) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) => ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((o, i)) => match o {
+            ::core::result::Result::Err(err) => ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) => match o {
                 $(
                     $p => $subrule!(i, $($args2)*),
                 )*
@@ -688,7 +689,7 @@ macro_rules! switch {
 #[macro_export]
 macro_rules! value {
     ($i:expr, $res:expr) => {
-        ::std::result::Result::Ok(($res, $i))
+        ::core::result::Result::Ok(($res, $i))
     };
 }
 
@@ -760,18 +761,18 @@ macro_rules! tuple_parser {
 
     ($i:expr, (), $submac:ident!( $($args:tt)* ), $($rest:tt)*) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((o, i)) =>
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) =>
                 tuple_parser!(i, (o), $($rest)*),
         }
     };
 
     ($i:expr, ($($parsed:tt)*), $submac:ident!( $($args:tt)* ), $($rest:tt)*) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((o, i)) =>
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) =>
                 tuple_parser!(i, ($($parsed)* , o), $($rest)*),
         }
     };
@@ -786,15 +787,15 @@ macro_rules! tuple_parser {
 
     ($i:expr, ($($parsed:expr),*), $submac:ident!( $($args:tt)* )) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((o, i)) =>
-                ::std::result::Result::Ok((($($parsed),*, o), i)),
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) =>
+                ::core::result::Result::Ok((($($parsed),*, o), i)),
         }
     };
 
     ($i:expr, ($($parsed:expr),*)) => {
-        ::std::result::Result::Ok((($($parsed),*), $i))
+        ::core::result::Result::Ok((($($parsed),*), $i))
     };
 }
 
@@ -873,16 +874,16 @@ macro_rules! alt {
 
     ($i:expr, $subrule:ident!( $($args:tt)*) | $($rest:tt)*) => {
         match $subrule!($i, $($args)*) {
-            res @ ::std::result::Result::Ok(_) => res,
+            res @ ::core::result::Result::Ok(_) => res,
             _ => alt!($i, $($rest)*)
         }
     };
 
     ($i:expr, $subrule:ident!( $($args:tt)* ) => { $gen:expr } | $($rest:tt)+) => {
         match $subrule!($i, $($args)*) {
-            ::std::result::Result::Ok((o, i)) =>
-                ::std::result::Result::Ok(($crate::parsers::invoke($gen, o), i)),
-            ::std::result::Result::Err(_) => alt!($i, $($rest)*),
+            ::core::result::Result::Ok((o, i)) =>
+                ::core::result::Result::Ok(($crate::parsers::invoke($gen, o), i)),
+            ::core::result::Result::Err(_) => alt!($i, $($rest)*),
         }
     };
 
@@ -896,10 +897,10 @@ macro_rules! alt {
 
     ($i:expr, $subrule:ident!( $($args:tt)* ) => { $gen:expr }) => {
         match $subrule!($i, $($args)*) {
-            ::std::result::Result::Ok((o, i)) =>
-                ::std::result::Result::Ok(($crate::parsers::invoke($gen, o), i)),
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) =>
+                ::core::result::Result::Ok(($crate::parsers::invoke($gen, o), i)),
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
         }
     };
 
@@ -962,7 +963,7 @@ macro_rules! alt {
 #[macro_export]
 macro_rules! do_parse {
     ($i:expr, ( $($rest:expr),* )) => {
-        ::std::result::Result::Ok((( $($rest),* ), $i))
+        ::core::result::Result::Ok((( $($rest),* ), $i))
     };
 
     ($i:expr, $e:ident >> $($rest:tt)*) => {
@@ -971,9 +972,9 @@ macro_rules! do_parse {
 
     ($i:expr, $submac:ident!( $($args:tt)* ) >> $($rest:tt)*) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((_, i)) =>
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((_, i)) =>
                 do_parse!(i, $($rest)*),
         }
     };
@@ -984,9 +985,9 @@ macro_rules! do_parse {
 
     ($i:expr, $field:ident : $submac:ident!( $($args:tt)* ) >> $($rest:tt)*) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((o, i)) => {
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) => {
                 let $field = o;
                 do_parse!(i, $($rest)*)
             },
@@ -999,9 +1000,9 @@ macro_rules! do_parse {
 
     ($i:expr, mut $field:ident : $submac:ident!( $($args:tt)* ) >> $($rest:tt)*) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((o, i)) => {
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((o, i)) => {
                 let mut $field = o;
                 do_parse!(i, $($rest)*)
             },
@@ -1126,10 +1127,10 @@ pub fn input_end(input: Cursor) -> PResult<'static, ()> {
 macro_rules! option {
     ($i:expr, $submac:ident!( $($args:tt)* )) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Ok((o, i)) =>
-                ::std::result::Result::Ok((Some(o), i)),
-            ::std::result::Result::Err(_) =>
-                ::std::result::Result::Ok((None, $i)),
+            ::core::result::Result::Ok((o, i)) =>
+                ::core::result::Result::Ok((Some(o), i)),
+            ::core::result::Result::Err(_) =>
+                ::core::result::Result::Ok((None, $i)),
         }
     };
 
@@ -1178,7 +1179,7 @@ macro_rules! option {
 #[macro_export]
 macro_rules! epsilon {
     ($i:expr,) => {
-        ::std::result::Result::Ok(((), $i))
+        ::core::result::Result::Ok(((), $i))
     };
 }
 
@@ -1194,13 +1195,13 @@ macro_rules! epsilon {
 macro_rules! tap {
     ($i:expr, $name:ident : $submac:ident!( $($args:tt)* ) => $e:expr) => {
         match $submac!($i, $($args)*) {
-            ::std::result::Result::Ok((o, i)) => {
+            ::core::result::Result::Ok((o, i)) => {
                 let $name = o;
                 $e;
-                ::std::result::Result::Ok(((), i))
+                ::core::result::Result::Ok(((), i))
             }
-            ::std::result::Result::Err(err) =>
-                ::std::result::Result::Err(err),
+            ::core::result::Result::Err(err) =>
+                ::core::result::Result::Err(err),
         }
     };
 
@@ -1229,7 +1230,7 @@ macro_rules! tap {
 ///
 /// /// Parses a module containing zero or more Rust items.
 /// ///
-/// /// Example: `mod m { type Result<T> = ::std::result::Result<T, MyError>; }`
+/// /// Example: `mod m { type Result<T> = ::core::result::Result<T, MyError>; }`
 /// struct SimpleMod {
 ///     mod_token: Token![mod],
 ///     name: Ident,
@@ -1302,10 +1303,10 @@ macro_rules! syn {
 macro_rules! custom_keyword {
     ($i:expr, $keyword:ident) => {
         match <$crate::Ident as $crate::synom::Synom>::parse($i) {
-            ::std::result::Result::Err(err) => ::std::result::Result::Err(err),
-            ::std::result::Result::Ok((token, i)) => {
+            ::core::result::Result::Err(err) => ::core::result::Result::Err(err),
+            ::core::result::Result::Ok((token, i)) => {
                 if token == stringify!($keyword) {
-                    ::std::result::Result::Ok((token, i))
+                    ::core::result::Result::Ok((token, i))
                 } else {
                     $crate::parse_error()
                 }

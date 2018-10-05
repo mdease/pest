@@ -7,10 +7,11 @@
 // except according to those terms.
 
 use super::*;
+use alloc::boxed::Box;
 use proc_macro2::TokenStream;
 use punctuated::Punctuated;
 #[cfg(feature = "extra-traits")]
-use std::hash::{Hash, Hasher};
+use core::hash::{Hash, Hasher};
 #[cfg(feature = "extra-traits")]
 use tt::TokenStreamHelper;
 
@@ -100,7 +101,7 @@ ast_enum_of_structs! {
             pub elems: Punctuated<Type, Token![,]>,
         }),
 
-        /// A path like `std::slice::Iter`, optionally qualified with a
+        /// A path like `core::slice::Iter`, optionally qualified with a
         /// self-type as in `<Vec<T> as SomeTrait>::Associated`.
         ///
         /// Type arguments are stored in the Path itself.

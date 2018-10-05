@@ -6,9 +6,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use alloc::string::String;
+
 use buffer::Cursor;
-use std::error::Error;
-use std::fmt::{self, Display};
+use core::fmt::{self, Display};
 
 /// The result of a `Synom` parser.
 ///
@@ -36,15 +37,6 @@ pub fn parse_error<O>() -> PResult<'static, O> {
 #[derive(Debug)]
 pub struct ParseError(Option<String>);
 
-impl Error for ParseError {
-    fn description(&self) -> &str {
-        match self.0 {
-            Some(ref desc) => desc,
-            None => "failed to parse",
-        }
-    }
-}
-
 impl Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         Display::fmt(self.description(), f)
@@ -52,6 +44,13 @@ impl Display for ParseError {
 }
 
 impl ParseError {
+    fn description(&self) -> &str {
+        match self.0 {
+            Some(ref desc) => desc,
+            None => "failed to parse",
+        }
+    }
+
     // For syn use only. Not public API.
     #[doc(hidden)]
     pub fn new<T: Into<String>>(msg: T) -> Self {

@@ -303,24 +303,24 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
 
     // architecture-specific
     // defaults
-    let mut is_little_endian = true;
-    let mut arch_size: u16 = 32;
+    let mut _is_little_endian = true;
+    let mut _arch_size: u16 = 32;
 
     if !file_name.is_empty() {
         let data = match read_file(&path) {
             Ok(data) => data,
-            Err(error) => String::new()
+            Err(_) => String::new()
         };
 
         // todo, there's probably a better way to do this
         if data.len() > 0 {
             let lines: Vec<&str> = data.split("\n").collect();
 
-            for l in lines {
+            for _ in lines {
                 let tokens: Vec<&str> = data.split("=").collect();
                 match tokens[0] {
-                    "is_little_endian" => { is_little_endian = FromStr::from_str(tokens[1]).unwrap() },
-                    "arch_size" => { arch_size = u16::from_str(tokens[1]).unwrap() },
+                    "is_little_endian" => { _is_little_endian = FromStr::from_str(tokens[1]).unwrap() },
+                    "arch_size" => { _arch_size = u16::from_str(tokens[1]).unwrap() },
                     _ => {}
                 }
             }

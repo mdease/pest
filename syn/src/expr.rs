@@ -7,12 +7,14 @@
 // except according to those terms.
 
 use super::*;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 use proc_macro2::{Span, TokenStream};
 use punctuated::Punctuated;
 #[cfg(feature = "extra-traits")]
-use std::hash::{Hash, Hasher};
+use core::hash::{Hash, Hasher};
 #[cfg(feature = "full")]
-use std::mem;
+use core::mem;
 #[cfg(feature = "extra-traits")]
 use tt::TokenStreamHelper;
 
@@ -391,7 +393,7 @@ ast_enum_of_structs! {
             pub to: Option<Box<Expr>>,
         }),
 
-        /// A path like `std::mem::replace` possibly containing generic
+        /// A path like `core::mem::replace` possibly containing generic
         /// parameters and a qualified self-type.
         ///
         /// A plain identifier like `x` is a path of length 1.
@@ -637,7 +639,7 @@ ast_struct! {
 
 impl From<usize> for Index {
     fn from(index: usize) -> Index {
-        assert!(index < std::u32::MAX as usize);
+        assert!(index < core::u32::MAX as usize);
         Index {
             index: index as u32,
             span: Span::call_site(),

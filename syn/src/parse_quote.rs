@@ -94,7 +94,7 @@ use synom::{PResult, Parser, Synom};
 
 // Not public API.
 #[doc(hidden)]
-pub use std::convert::From;
+pub use core::convert::From;
 
 // Not public API.
 #[doc(hidden)]

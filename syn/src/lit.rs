@@ -6,8 +6,13 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use alloc::string::*;
+use alloc::str::*;
+use alloc::vec::Vec;
+use alloc::borrow::ToOwned;
+
 use proc_macro2::{Literal, Span};
-use std::str;
+use core::str;
 
 #[cfg(feature = "printing")]
 use proc_macro2::Term;
@@ -20,7 +25,7 @@ use {ParseError, Synom};
 use proc_macro2::TokenTree;
 
 #[cfg(feature = "extra-traits")]
-use std::hash::{Hash, Hasher};
+use core::hash::{Hash, Hasher};
 
 ast_enum_of_structs! {
     /// A Rust literal such as a string or integer or boolean.
@@ -561,8 +566,8 @@ mod printing {
 mod value {
     use super::*;
     use proc_macro2::TokenStream;
-    use std::char;
-    use std::ops::{Index, RangeFrom};
+    use core::char;
+    use core::ops::{Index, RangeFrom};
 
     impl Lit {
         /// Interpret a Syn literal from a proc-macro2 literal.

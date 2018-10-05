@@ -257,6 +257,8 @@
 //! - **`proc-macro`** *(enabled by default)* — Runtime dependency on the
 //!   dynamic library libproc_macro from rustc toolchain.
 
+#![no_std]
+
 // Syn types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/syn/0.13.11")]
 #![cfg_attr(
@@ -266,6 +268,11 @@
         needless_pass_by_value, redundant_field_names
     )
 )]
+
+#![feature(alloc)]
+
+#[macro_use]
+extern crate alloc;
 
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;

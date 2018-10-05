@@ -13,7 +13,7 @@ use punctuated::Punctuated;
 use token::{Brace, Paren};
 
 #[cfg(feature = "extra-traits")]
-use std::hash::{Hash, Hasher};
+use core::hash::{Hash, Hasher};
 #[cfg(feature = "extra-traits")]
 use tt::TokenStreamHelper;
 
@@ -41,7 +41,7 @@ ast_enum_of_structs! {
             pub semi_token: Token![;],
         }),
 
-        /// A use declaration: `use std::collections::HashMap`.
+        /// A use declaration: `use core::collections::HashMap`.
         ///
         /// *This type is available if Syn is built with the `"full"` feature.*
         pub Use(ItemUse {
@@ -121,7 +121,7 @@ ast_enum_of_structs! {
             pub items: Vec<ForeignItem>,
         }),
 
-        /// A type alias: `type Result<T> = std::result::Result<T, MyError>`.
+        /// A type alias: `type Result<T> = core::result::Result<T, MyError>`.
         ///
         /// *This type is available if Syn is built with the `"full"` feature.*
         pub Type(ItemType {
@@ -337,7 +337,7 @@ ast_enum_of_structs! {
     ///
     /// [syntax tree enum]: enum.Expr.html#syntax-tree-enums
     pub enum UseTree {
-        /// A path prefix of imports in a `use` item: `std::...`.
+        /// A path prefix of imports in a `use` item: `core::...`.
         ///
         /// *This type is available if Syn is built with the `"full"` feature.*
         pub Path(UsePath {
