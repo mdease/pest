@@ -1,15 +1,16 @@
 #![cfg_attr(not(procmacro2_semver_exempt), allow(dead_code))]
 
-use std::borrow::Borrow;
-use std::cell::RefCell;
+use core::borrow::Borrow;
+use core::cell::RefCell;
 #[cfg(procmacro2_semver_exempt)]
-use std::cmp;
-use std::collections::HashMap;
-use std::fmt;
-use std::iter;
-use std::rc::Rc;
-use std::str::FromStr;
-use std::vec;
+use core::cmp::{self, Ord, PartialOrd};
+use alloc::collections::BTreeMap;
+use core::fmt;
+use core::iter;
+use alloc::rc::Rc;
+use core::str::FromStr;
+use alloc::vec::{self, Vec};
+use alloc::string::*;
 
 use strnom::{block_comment, skip_whitespace, whitespace, word_break, Cursor, PResult};
 use unicode_xid::UnicodeXID;
@@ -413,24 +414,53 @@ pub struct Term {
     span: Span,
 }
 
-thread_local!(static SYMBOLS: RefCell<Interner> = RefCell::new(Interner::new()));
+static mut SYMBOLS: Option<RefCell<Interner>> = None;
 
 impl Term {
     pub fn new(string: &str, span: Span) -> Term {
         validate_term(string);
+        let size: usize;
+
+        unsafe {
+            match SYMBOLS {
+                Some(ref refcell) => {
+                    size = refcell.borrow_mut().intern(string);
+                },
+                None => {
+                    let mut interner = Interner::new();
+                    size = interner.intern(string);
+
+                    SYMBOLS = Some(RefCell::new(interner));
+                }
+            }
+        }
 
         Term {
-            intern: SYMBOLS.with(|s| s.borrow_mut().intern(string)),
+            intern: size,
             span: span,
         }
     }
 
     pub fn as_str(&self) -> &str {
-        SYMBOLS.with(|interner| {
-            let interner = interner.borrow();
-            let s = interner.get(self.intern);
-            unsafe { &*(s as *const str) }
-        })
+        let s: &str;
+
+        unsafe {
+            match SYMBOLS {
+                Some(ref refcell) => {
+                    let interner = refcell.borrow();
+                    let string = interner.get(self.intern);
+                    s = &*(string as *const str);
+                },
+                None => {
+                    SYMBOLS = Some(RefCell::new(Interner::new()));
+
+                    // lol
+                    s = self.as_str();
+                }
+            }
+
+            &*(s as *const str)
+        }
     }
 
     pub fn span(&self) -> Span {
@@ -489,11 +519,11 @@ impl fmt::Debug for Term {
 }
 
 struct Interner {
-    string_to_index: HashMap<MyRc, usize>,
+    string_to_index: BTreeMap<MyRc, usize>,
     index_to_string: Vec<Rc<String>>,
 }
 
-#[derive(Hash, Eq, PartialEq)]
+#[derive(Hash, Eq, Ord, PartialEq, PartialOrd)]
 struct MyRc(Rc<String>);
 
 impl Borrow<str> for MyRc {
@@ -505,7 +535,7 @@ impl Borrow<str> for MyRc {
 impl Interner {
     fn new() -> Interner {
         Interner {
-            string_to_index: HashMap::new(),
+            string_to_index: BTreeMap::new(),
             index_to_string: Vec::new(),
         }
     }

@@ -7,7 +7,13 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-use std::fmt::Display;
+#![no_std]
+
+#![feature(alloc)]
+#[macro_use]
+extern crate alloc;
+
+use core::fmt::Display;
 
 pub mod ast;
 pub mod optimizer;
@@ -17,13 +23,7 @@ where
     E: IntoIterator,
     E::Item: Display
 {
-    result.unwrap_or_else(|e| {
-        panic!(
-            "grammar error\n\n".to_owned()
-                + &e.into_iter()
-                    .map(|error| format!("{}", error))
-                    .collect::<Vec<_>>()
-                    .join("\n\n")
-        )
+    result.unwrap_or_else(|_| {
+        panic!("grammar error");
     })
 }

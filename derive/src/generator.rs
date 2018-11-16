@@ -7,7 +7,10 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-use std::collections::HashMap;
+use alloc::prelude::ToString;
+use alloc::collections::BTreeMap;
+use alloc::string::String;
+use alloc::vec::Vec;
 
 use quote::Tokens;
 use syn::{Generics, Ident};
@@ -35,15 +38,17 @@ pub fn generate(
         }
     }
 
-    let mut rules_string = name.to_string();
-    rules_string.push_str("Rule");
+    let mut rules_string: String = name.to_string();
+    rules_string.push_str("RuleEnum");
     let rules_enum_ident = Ident::from(rules_string);
 
     let builtins = generate_builtin_rules(rules_enum_ident);
     let rule_enum = generate_enum(rules_enum_ident, &rules, uses_eoi);
     let skip = generate_skip(rules_enum_ident, &rules);
 
-    let rule_ident = Ident::from(rules[0].name.as_str());
+    let mut rule_str = rules[0].name.clone();
+    rule_str.push_str("Rule");
+    let rule_ident = Ident::from(rule_str);
 
     let mut rules: Vec<_> = rules.into_iter().map(|rule| generate_rule(rules_enum_ident, rule)).collect();
 
@@ -60,7 +65,7 @@ pub fn generate(
                     #[inline]
                     #[allow(dead_code, non_snake_case, unused_variables)]
                     pub fn #upper_ident(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
-                        state.skip(#ident::size())
+                        state.skip(::#ident::size())
                     }
                 }
             }
@@ -156,8 +161,8 @@ pub fn generate(
 }
 
 // Note: All builtin rules should be validated as pest keywords in meta/src/validator.rs.
-fn generate_builtin_rules(rules_enum_ident: Ident) -> HashMap<&'static str, Tokens> {
-    let mut builtins = HashMap::new();
+fn generate_builtin_rules(rules_enum_ident: Ident) -> BTreeMap<&'static str, Tokens> {
+    let mut builtins = BTreeMap::new();
     // force ref to go out of scope
     {
         let builtins_ref = &mut builtins;
@@ -245,7 +250,9 @@ fn generate_builtin_rules(rules_enum_ident: Ident) -> HashMap<&'static str, Toke
 }
 
 fn generate_enum(rules_enum_ident: Ident, rules: &Vec<OptimizedRule>, uses_eoi: bool) -> Tokens {
-    let rules = rules.iter().map(|rule| Ident::from(rule.name.as_str()));
+    let mut rule_string = rules[0].name.clone();
+    rule_string.push_str("Rule");
+    let rule_enum_ident = Ident::from(rule_string);
 
     if uses_eoi {
         quote! {
@@ -253,7 +260,7 @@ fn generate_enum(rules_enum_ident: Ident, rules: &Vec<OptimizedRule>, uses_eoi: 
             #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
             pub enum #rules_enum_ident {
                 EOI,
-                #( #rules ),*
+                #rule_enum_ident
             }
         }
     } else {
@@ -261,14 +268,16 @@ fn generate_enum(rules_enum_ident: Ident, rules: &Vec<OptimizedRule>, uses_eoi: 
             #[allow(dead_code, non_camel_case_types)]
             #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
             pub enum #rules_enum_ident {
-                #( #rules ),*
+                #rule_enum_ident
             }
         }
     }
 }
 
 fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
-    let name = Ident::from(rule.name);
+    let mut name_str = rule.name;
+    name_str.push_str("Rule");
+    let name = Ident::from(name_str);
     let expr = if { rule.ty == RuleType::Atomic || rule.ty == RuleType::CompoundAtomic } {
         generate_expr_atomic(rule.expr)
     } else {

@@ -7,11 +7,13 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::ptr;
-use std::rc::Rc;
-use std::str;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt;
+use core::hash::{Hash, Hasher};
+use core::ptr;
+use alloc::rc::Rc;
+use core::str;
 
 use byteorder::{ByteOrder, BigEndian, LittleEndian};
 
@@ -274,16 +276,27 @@ impl<'i, R: RuleType> fmt::Display for Pair<'i, R> {
         if pairs.peek().is_none() {
             write!(f, "{:?}({}, {})", rule, start, end)
         } else {
+            let pairs_vec = pairs
+                .map(|pair| format!("{}", pair))
+                .collect::<Vec<_>>();
+
+            let mut pairs_str = String::new();
+
+            for (i, e) in pairs_vec.iter().enumerate() {
+                pairs_str = format!("{}{}", pairs_str, e);
+
+                if i < pairs_vec.len() - 1 {
+                    pairs_str = format!("{}{}", pairs_str, ", ");
+                }
+            }
+            
             write!(
                 f,
                 "{:?}({}, {}, [{}])",
                 rule,
                 start,
                 end,
-                pairs
-                    .map(|pair| format!("{}", pair))
-                    .collect::<Vec<_>>()
-                    .join(", ")
+                pairs_str
             )
         }
     }

@@ -93,6 +93,10 @@
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote/0.5.2")]
 
+#![no_std]
+#![feature(alloc)]
+extern crate alloc;
+
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;
 extern crate proc_macro2;

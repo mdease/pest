@@ -8,6 +8,8 @@
 // modified, or distributed except according to those terms.
 
 use ast::*;
+use alloc::vec::Vec;
+use alloc::string::String;
 
 pub fn skip(rule: Rule) -> Rule {
     fn populate_choices(expr: Expr, mut choices: Vec<String>) -> Option<Expr> {

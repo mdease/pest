@@ -8,6 +8,7 @@
 // modified, or distributed except according to those terms.
 
 use ast::*;
+use alloc::boxed::Box;
 
 pub fn factor(rule: Rule) -> Rule {
     match rule {

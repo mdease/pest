@@ -1,5 +1,6 @@
+use alloc::vec::Vec;
 use byteorder::{ByteOrder, BigEndian, LittleEndian};
-use std::str;
+use core::str;
 
 static SIZE_8: usize = 1;
 static SIZE_16: usize = 2;

@@ -56,14 +56,19 @@
 
 #![doc(html_root_url = "https://docs.rs/pest")]
 
+#![no_std]
+#![feature(alloc)]
+#[macro_use]
+extern crate alloc;
+
 extern crate byteorder;
 
 pub use parser::Parser;
 pub use parser_state::{state, Atomicity, Lookahead, ParseResult, ParserState};
 pub use position::Position;
 pub use span::Span;
-use std::fmt::Debug;
-use std::hash::Hash;
+use core::fmt::Debug;
+use core::hash::Hash;
 pub use token::Token;
 
 pub mod error;

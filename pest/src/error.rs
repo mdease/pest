@@ -9,10 +9,11 @@
 
 //! A `mod` containing error data structures.
 
-use std::cmp;
-use std::error;
-use std::fmt;
-use std::mem;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::cmp;
+use core::fmt;
+use core::mem;
 
 use RuleType;
 use position::Position;
@@ -61,7 +62,7 @@ impl<R: RuleType> Error<R> {
         Error {
             variant,
             location: InputLocation::Pos(pos.pos()),
-            line: pos.line_of().to_owned(),
+            line: String::from(pos.line_of()),
             continued_line: None,
             start: pos.line_col(),
             end: None
@@ -70,7 +71,7 @@ impl<R: RuleType> Error<R> {
 
     pub fn new_from_span(variant: ErrorVariant<R>, span: Span) -> Error<R> {
         let continued_line = if span.start_pos().line_col().0 != span.end_pos().line_col().0 {
-            Some(span.end_pos().line_of().to_owned())
+            Some(String::from(span.end_pos().line_of()))
         } else {
             None
         };
@@ -78,7 +79,7 @@ impl<R: RuleType> Error<R> {
         Error {
             variant,
             location: InputLocation::Span((span.start(), span.end())),
-            line: span.start_pos().line_of().to_owned(),
+            line: String::from(span.start_pos().line_of()),
             continued_line,
             start: span.start_pos().line_col(),
             end: Some(span.end_pos().line_col())
@@ -217,7 +218,7 @@ impl<R: RuleType> Error<R> {
             ),
             (false, true) => format!("unexpected {}", Error::enumerate(negatives, &mut f)),
             (true, false) => format!("expected {}", Error::enumerate(positives, &mut f)),
-            (true, true) => "unknown parsing error".to_owned()
+            (true, true) => String::from("unknown parsing error")
         }
     }
 
@@ -229,12 +230,22 @@ impl<R: RuleType> Error<R> {
             1 => f(&rules[0]),
             2 => format!("{} or {}", f(&rules[0]), f(&rules[1])),
             l => {
-                let separated = rules
+                let separated_vec = rules
                     .iter()
                     .take(l - 1)
                     .map(|r| f(r))
-                    .collect::<Vec<_>>()
-                    .join(", ");
+                    .collect::<Vec<_>>();
+
+                let mut separated = String::new();
+
+                for (i, e) in separated_vec.iter().enumerate() {
+                    separated = format!("{}{}", separated, e);
+
+                    if i < separated_vec.len() - 1 {
+                        separated = format!("{}{}", separated, ", ");
+                    }
+                }
+
                 format!("{}, or {}", separated, f(&rules[l - 1]))
             }
         }
@@ -302,19 +313,17 @@ impl<R: RuleType> Error<R> {
             )
         }
     }
-}
 
-impl<R: RuleType> fmt::Display for Error<R> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.format())
-    }
-}
-
-impl<'i, R: RuleType> error::Error for Error<R> {
     fn description(&self) -> &str {
         match self.variant {
             ErrorVariant::ParsingError { .. } => "parsing error",
             ErrorVariant::CustomError { ref message } => message
         }
+    }
+}
+
+impl<R: RuleType> fmt::Display for Error<R> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.format())
     }
 }

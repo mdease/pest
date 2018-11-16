@@ -9,6 +9,9 @@
 
 /// Implementation of a `Stack` which maintains an log of `StackOp`s in order to rewind the stack
 /// to a previous state.
+
+use alloc::vec::{Vec};
+
 #[derive(Debug)]
 pub struct Stack<T: Clone> {
     ops: Vec<StackOp<T>>,

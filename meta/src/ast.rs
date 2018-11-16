@@ -7,6 +7,10 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::vec::Vec;
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Rule {
     pub name: String,

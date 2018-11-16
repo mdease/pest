@@ -1,12 +1,12 @@
 use quote::Tokens;
 use syn::Ident;
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
 
-pub fn insert_builtin(rules_enum_ident: Ident, builtins: &mut HashMap<&'static str, Tokens>, name: &'static str, pattern: Tokens) {
+pub fn insert_builtin(rules_enum_ident: Ident, builtins: &mut BTreeMap<&'static str, Tokens>, name: &'static str, pattern: Tokens) {
 	builtins.insert(name, generate_rule(rules_enum_ident, name, pattern));
 }
 
-pub fn insert_public_builtin(rules_enum_ident: Ident, builtins: &mut HashMap<&'static str, Tokens>, name: &'static str, pattern: Tokens) {
+pub fn insert_public_builtin(rules_enum_ident: Ident, builtins: &mut BTreeMap<&'static str, Tokens>, name: &'static str, pattern: Tokens) {
 	builtins.insert(name, generate_public_rule(rules_enum_ident, name, pattern));
 }
 

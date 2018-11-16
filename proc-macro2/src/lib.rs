@@ -46,15 +46,22 @@
 #![doc(html_root_url = "https://docs.rs/proc-macro2/0.3.8")]
 #![cfg_attr(feature = "nightly", feature(proc_macro))]
 
+#![no_std]
+
+#![feature(thread_local)]
+#![feature(alloc)]
+#[macro_use]
+extern crate alloc;
+
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;
 extern crate unicode_xid;
 
-use std::fmt;
-use std::iter::FromIterator;
-use std::marker;
-use std::rc::Rc;
-use std::str::FromStr;
+use core::fmt;
+use core::iter::FromIterator;
+use core::marker;
+use alloc::rc::Rc;
+use core::str::FromStr;
 
 #[macro_use]
 mod strnom;
@@ -621,9 +628,9 @@ impl fmt::Display for Literal {
 }
 
 pub mod token_stream {
-    use std::fmt;
-    use std::marker;
-    use std::rc::Rc;
+    use core::fmt;
+    use core::marker;
+    use alloc::rc::Rc;
 
     use imp;
     pub use TokenStream;

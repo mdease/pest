@@ -7,7 +7,6 @@
 // except according to those terms.
 
 use alloc::string::*;
-use alloc::str::*;
 use alloc::vec::Vec;
 use alloc::borrow::ToOwned;
 

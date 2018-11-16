@@ -10,9 +10,11 @@
 //! A `mod` containing constructs useful in infix operator parsing with the precedence climbing
 //! method.
 
-use std::collections::HashMap;
-use std::iter::Peekable;
-use std::ops::BitOr;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
+use alloc::collections::BTreeMap;
+use core::iter::Peekable;
+use core::ops::BitOr;
 
 use RuleType;
 use iterators::Pair;
@@ -83,7 +85,7 @@ impl<R: RuleType> BitOr for Operator<R> {
 /// [1]: https://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method
 #[derive(Debug)]
 pub struct PrecClimber<R: RuleType> {
-    ops: HashMap<R, (u32, Assoc)>
+    ops: BTreeMap<R, (u32, Assoc)>
 }
 
 impl<R: RuleType> PrecClimber<R> {
@@ -114,7 +116,7 @@ impl<R: RuleType> PrecClimber<R> {
     pub fn new(ops: Vec<Operator<R>>) -> PrecClimber<R> {
         let ops = ops.into_iter()
             .zip(1..)
-            .fold(HashMap::new(), |mut map, (op, prec)| {
+            .fold(BTreeMap::new(), |mut map, (op, prec)| {
                 let mut next = Some(op);
 
                 while let Some(op) = next.take() {

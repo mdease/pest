@@ -7,11 +7,12 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-use std::cmp::Ordering;
-use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::ptr;
-use std::str;
+use alloc::vec::Vec;
+use core::cmp::Ordering;
+use core::fmt;
+use core::hash::{Hash, Hasher};
+use core::ptr;
+use core::str;
 
 use byteorder::{ByteOrder, BigEndian, LittleEndian};
 

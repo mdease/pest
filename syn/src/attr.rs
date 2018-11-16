@@ -10,7 +10,6 @@ use super::*;
 use punctuated::Punctuated;
 
 use alloc::string::*;
-use alloc::str::*;
 use alloc::vec::Vec;
 use core::iter;
 

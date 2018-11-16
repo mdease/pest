@@ -8,6 +8,7 @@
 // modified, or distributed except according to those terms.
 
 use ast::*;
+use alloc::boxed::Box;
 
 pub fn rotate(rule: Rule) -> Rule {
     fn rotate_internal(expr: Expr) -> Expr {

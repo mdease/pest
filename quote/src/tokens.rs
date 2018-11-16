@@ -1,6 +1,9 @@
 use super::ToTokens;
-use std::fmt::{self, Debug, Display};
-use std::hash::{Hash, Hasher};
+use core::fmt::{self, Debug, Display};
+use core::hash::{Hash, Hasher};
+
+use alloc::vec::Vec;
+use alloc::string::*;
 
 #[cfg(feature = "proc-macro")]
 use proc_macro;
@@ -128,7 +131,7 @@ impl IntoIterator for Tokens {
 
 mod private {
     use proc_macro2::TokenTree;
-    use std::vec;
+    use alloc::vec;
 
     pub struct IntoIter(vec::IntoIter<TokenTree>);
 

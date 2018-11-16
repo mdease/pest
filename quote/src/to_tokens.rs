@@ -1,6 +1,9 @@
 use super::Tokens;
 
-use std::borrow::Cow;
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::borrow::Cow;
+use alloc::borrow::ToOwned;
 
 use proc_macro2::{Group, Literal, Op, Span, Term, TokenStream, TokenTree};
 

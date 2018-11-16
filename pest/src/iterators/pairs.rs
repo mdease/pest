@@ -7,10 +7,12 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::ptr;
-use std::rc::Rc;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt;
+use core::hash::{Hash, Hasher};
+use core::ptr;
+use alloc::rc::Rc;
 
 use super::flat_pairs::{self, FlatPairs};
 use super::pair::{self, Pair};
@@ -160,13 +162,24 @@ impl<'i, R: RuleType> fmt::Debug for Pairs<'i, R> {
 
 impl<'i, R: RuleType> fmt::Display for Pairs<'i, R> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            let pairs_vec = self.clone()
+                .map(|pair| format!("{}", pair))
+                .collect::<Vec<_>>();
+
+            let mut pairs_str = String::new();
+
+            for (i, e) in pairs_vec.iter().enumerate() {
+                pairs_str = format!("{}{}", pairs_str, e);
+
+                if i < pairs_vec.len() - 1 {
+                    pairs_str = format!("{}{}", pairs_str, ", ");
+                }
+            }
+
         write!(
             f,
             "[{}]",
-            self.clone()
-                .map(|pair| format!("{}", pair))
-                .collect::<Vec<_>>()
-                .join(", ")
+            pairs_str
         )
     }
 }

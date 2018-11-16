@@ -260,6 +260,12 @@
 #![doc(html_root_url = "https://docs.rs/pest_derive")]
 #![recursion_limit = "256"]
 
+#![no_std]
+
+#![feature(alloc)]
+#[macro_use]
+extern crate alloc;
+
 extern crate pest;
 extern crate pest_meta;
 
@@ -268,12 +274,17 @@ extern crate proc_macro;
 extern crate quote;
 extern crate syn;
 
-use std::env;
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::{self, Read};
-use std::path::Path;
-use std::str::FromStr;
+use alloc::prelude::ToString;
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::vec::Vec;
+
+// use std::env;
+// use std::ffi::OsStr;
+// use std::fs::File;
+// use std::io::{self, Read};
+// use std::path::Path;
+// use std::str::FromStr;
 
 use proc_macro::TokenStream;
 use syn::{DeriveInput, Generics, Ident};
@@ -293,39 +304,39 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = syn::parse(input).unwrap();
     let (name, generics, fields, types, defaults, expr) = parse_derive(ast);
 
-    // read the config
-    let root = env::var("CARGO_MANIFEST_DIR").unwrap_or(".".into());
-    let path = Path::new(&root).join("pest.conf");
-    let file_name = match path.file_name() {
-        Some(file_name) => file_name,
-        None => OsStr::new("")
-    };
+    // // read the config
+    // let root = env::var("CARGO_MANIFEST_DIR").unwrap_or(".".into());
+    // let path = Path::new(&root).join("pest.conf");
+    // let file_name = match path.file_name() {
+    //     Some(file_name) => file_name,
+    //     None => OsStr::new("")
+    // };
 
-    // architecture-specific
-    // defaults
-    let mut _is_little_endian = true;
-    let mut _arch_size: u16 = 32;
+    // // architecture-specific
+    // // defaults
+    // let mut _is_little_endian = true;
+    // let mut _arch_size: u16 = 32;
 
-    if !file_name.is_empty() {
-        let data = match read_file(&path) {
-            Ok(data) => data,
-            Err(_) => String::new()
-        };
+    // if !file_name.is_empty() {
+    //     let data = match read_file(&path) {
+    //         Ok(data) => data,
+    //         Err(_) => String::new()
+    //     };
 
-        // todo, there's probably a better way to do this
-        if data.len() > 0 {
-            let lines: Vec<&str> = data.split("\n").collect();
+    //     // todo, there's probably a better way to do this
+    //     if data.len() > 0 {
+    //         let lines: Vec<&str> = data.split("\n").collect();
 
-            for _ in lines {
-                let tokens: Vec<&str> = data.split("=").collect();
-                match tokens[0] {
-                    "is_little_endian" => { _is_little_endian = FromStr::from_str(tokens[1]).unwrap() },
-                    "arch_size" => { _arch_size = u16::from_str(tokens[1]).unwrap() },
-                    _ => {}
-                }
-            }
-        }
-    }
+    //         for _ in lines {
+    //             let tokens: Vec<&str> = data.split("=").collect();
+    //             match tokens[0] {
+    //                 "is_little_endian" => { _is_little_endian = FromStr::from_str(tokens[1]).unwrap() },
+    //                 "arch_size" => { _arch_size = u16::from_str(tokens[1]).unwrap() },
+    //                 _ => {}
+    //             }
+    //         }
+    //     }
+    // }
 
     let ast = vec![
         AstRule {
@@ -344,12 +355,12 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     generated.into()
 }
 
-fn read_file<P: AsRef<Path>>(path: P) -> io::Result<String> {
-    let mut file = File::open(path.as_ref())?;
-    let mut string = String::new();
-    file.read_to_string(&mut string)?;
-    Ok(string)
-}
+// fn read_file<P: AsRef<Path>>(path: P) -> io::Result<String> {
+//     let mut file = File::open(path.as_ref())?;
+//     let mut string = String::new();
+//     file.read_to_string(&mut string)?;
+//     Ok(string)
+// }
 
 fn parse_derive(ast: DeriveInput) -> (Ident, Generics, Vec<String>, Vec<String>, Vec<String>, Expr) {
     let name = ast.ident;

@@ -1,9 +1,9 @@
 #![cfg_attr(not(procmacro2_semver_exempt), allow(dead_code))]
 
-use std::fmt;
-use std::iter;
-use std::str::FromStr;
-use std::panic;
+use core::fmt;
+use core::iter;
+use core::str::FromStr;
+use core::panic;
 
 use proc_macro;
 use stable;
@@ -22,7 +22,7 @@ pub enum LexError {
 }
 
 fn nightly_works() -> bool {
-    use std::sync::atomic::*;
+    use core::sync::atomic::*;
     static WORKS: AtomicUsize = ATOMIC_USIZE_INIT;
 
     match WORKS.load(Ordering::SeqCst) {

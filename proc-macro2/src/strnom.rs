@@ -1,6 +1,6 @@
 //! Adapted from [`nom`](https://github.com/Geal/nom).
 
-use std::str::{Bytes, CharIndices, Chars};
+use core::str::{Bytes, CharIndices, Chars};
 
 use unicode_xid::UnicodeXID;
 

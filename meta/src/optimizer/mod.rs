@@ -8,7 +8,10 @@
 // modified, or distributed except according to those terms.
 
 use ast::*;
-use std::collections::HashMap;
+use alloc::boxed::Box;
+use alloc::collections::BTreeMap;
+use alloc::string::String;
+use alloc::vec::Vec;
 
 mod concatenator;
 mod factorizer;
@@ -65,7 +68,7 @@ fn rule_to_optimized_rule(rule: Rule) -> OptimizedRule {
     }
 }
 
-fn populate_rules_to_exprs(rules: &[OptimizedRule]) -> HashMap<String, OptimizedExpr> {
+fn populate_rules_to_exprs(rules: &[OptimizedRule]) -> BTreeMap<String, OptimizedExpr> {
     rules
         .iter()
         .map(|r| (r.name.clone(), r.expr.clone()))

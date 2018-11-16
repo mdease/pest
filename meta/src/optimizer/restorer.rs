@@ -6,13 +6,14 @@
 // license <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
+use alloc::string::String;
 
 use optimizer::*;
 
 pub fn restore_on_err(
     rule: OptimizedRule,
-    rules_to_exprs: &HashMap<String, OptimizedExpr>
+    rules_to_exprs: &BTreeMap<String, OptimizedExpr>
 ) -> OptimizedRule {
     match rule {
         OptimizedRule { name, ty, expr } => {
@@ -25,7 +26,7 @@ pub fn restore_on_err(
 
 fn wrap_branching_exprs(
     expr: OptimizedExpr,
-    rules_to_exprs: &HashMap<String, OptimizedExpr>
+    rules_to_exprs: &BTreeMap<String, OptimizedExpr>
 ) -> OptimizedExpr {
     match expr {
         OptimizedExpr::Opt(expr) => {
@@ -61,7 +62,7 @@ fn wrap_branching_exprs(
 
 fn child_modifies_state(
     expr: &OptimizedExpr,
-    rules_to_exprs: &HashMap<String, OptimizedExpr>
+    rules_to_exprs: &BTreeMap<String, OptimizedExpr>
 ) -> bool {
     expr.iter_top_down().any(|expr| match expr {
         OptimizedExpr::Push(_) => true,

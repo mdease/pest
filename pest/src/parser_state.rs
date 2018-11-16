@@ -7,8 +7,10 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-use std::ops::Range;
-use std::rc::Rc;
+use alloc::vec::Vec;
+use core::ops::Range;
+use alloc::rc::Rc;
+use alloc::boxed::Box;
 
 use RuleType;
 use error::{Error, ErrorVariant};
