@@ -10,6 +10,13 @@ static SIZE_BOOL: usize = 1;
 
 // TODO: char, usize, isize
 pub fn size(ty: &str) -> usize {
+	let size = env!("AVID_ARCH_SIZE");
+	let mut arch_size = SIZE_32;
+
+	if size == "64" {
+		arch_size = SIZE_64;
+	}
+
 	match ty {
 		"i8" => SIZE_8,
 		"u8" => SIZE_8,
@@ -22,7 +29,19 @@ pub fn size(ty: &str) -> usize {
 		"f32" => SIZE_32,
 		"f64" => SIZE_64,
 		"bool" => SIZE_BOOL,
+		"usize" => arch_size,
+		"isize" => arch_size,
 		_ => 0
+	}
+}
+
+pub fn is_little_endian() -> bool {
+	let endianness = env!("AVID_ENDIANNESS");
+
+	if endianness == "LE" {
+		true
+	} else {
+		false
 	}
 }
 

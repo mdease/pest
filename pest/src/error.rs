@@ -314,6 +314,7 @@ impl<R: RuleType> Error<R> {
         }
     }
 
+    #[allow(dead_code)]
     fn description(&self) -> &str {
         match self.variant {
             ErrorVariant::ParsingError { .. } => "parsing error",

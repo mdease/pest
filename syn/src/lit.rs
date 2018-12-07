@@ -8,6 +8,8 @@
 
 use alloc::string::*;
 use alloc::vec::Vec;
+
+#[allow(unused_imports)]
 use alloc::borrow::ToOwned;
 
 use proc_macro2::{Literal, Span};
