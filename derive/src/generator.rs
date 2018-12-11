@@ -64,7 +64,7 @@ pub fn generate(
                 quote! {
                     #[inline]
                     #[allow(dead_code, non_snake_case, unused_variables)]
-                    pub fn #upper_ident(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+                    pub fn #upper_ident(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
                         state.skip(::#ident::size())
                     }
                 }
@@ -78,7 +78,7 @@ pub fn generate(
         impl #impl_generics ::pest::Parser<#rules_enum_ident> for #name #ty_generics #where_clause {
             fn parse<'i>(
                 input: &'i [u8]
-            ) -> ::std::result::Result<
+            ) -> ::core::result::Result<
                 ::pest::iterators::Pairs<'i, #rules_enum_ident>,
                 ::pest::error::Error<#rules_enum_ident>
             > {
@@ -147,13 +147,12 @@ pub fn generate(
             }
 
             fn validate(
-                le: bool,
                 ptr: *const u8
             ) {
                 unsafe {
-                    let slice = std::slice::from_raw_parts(ptr, #name::size());
+                    let slice = core::slice::from_raw_parts(ptr, #name::size());
 
-                    #name::parse_and_create(le, &mut slice.to_vec());
+                    #name::parse_and_create(true, &mut slice.to_vec());
                 }
             }
         }
@@ -298,7 +297,7 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::Normal => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
                 state.rule(#rules_enum_ident::#name, |state| {
                     #expr
                 })
@@ -307,14 +306,14 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::Silent => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
                 #expr
             }
         },
         RuleType::Atomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
                 state.rule(#rules_enum_ident::#name, |state| {
                     state.atomic(::pest::Atomicity::Atomic, |state| {
                         #expr
@@ -325,7 +324,7 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::CompoundAtomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
                 state.atomic(::pest::Atomicity::CompoundAtomic, |state| {
                     state.rule(#rules_enum_ident::#name, |state| {
                         #expr
@@ -336,7 +335,7 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::NonAtomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
                 state.atomic(::pest::Atomicity::NonAtomic, |state| {
                     state.rule(#rules_enum_ident::#name, |state| {
                         #expr

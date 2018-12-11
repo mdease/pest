@@ -262,6 +262,7 @@
 
 #![no_std]
 
+#![feature(extern_prelude)]
 #![feature(alloc)]
 #[macro_use]
 extern crate alloc;

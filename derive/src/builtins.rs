@@ -17,7 +17,7 @@ pub fn generate_rule(rules_enum_ident: Ident, name: &'static str, pattern: Token
 		#[inline]
         #[allow(dead_code, non_snake_case, unused_variables)]
 
-        fn #ident(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+        fn #ident(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
             #pattern
         }
 	}
@@ -29,7 +29,7 @@ pub fn generate_public_rule(rules_enum_ident: Ident, name: &'static str, pattern
 	quote!{
 		#[inline]
         #[allow(dead_code, non_snake_case, unused_variables)]
-        pub fn #ident(state: Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<Box<::pest::ParserState<#rules_enum_ident>>> {
+        pub fn #ident(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
             #pattern
         }
 	}
