@@ -57,9 +57,6 @@
 #![doc(html_root_url = "https://docs.rs/pest")]
 
 #![no_std]
-#![feature(alloc)]
-#[macro_use]
-extern crate alloc;
 
 extern crate byteorder;
 
@@ -69,19 +66,14 @@ pub use position::Position;
 pub use span::Span;
 use core::fmt::Debug;
 use core::hash::Hash;
-pub use token::Token;
 
 pub mod error;
 pub mod iterators;
-mod macros;
 mod parser;
 mod parser_state;
 mod position;
-pub mod prec_climber;
 pub mod reader;
 pub mod span;
-mod stack;
-mod token;
 
 /// A `trait` which parser rules must implement.
 ///

@@ -24,7 +24,7 @@ macro_rules! generate_rule {
         quote! {
             #[inline]
             #[allow(dead_code, non_snake_case, unused_variables)]
-            fn $name(state: Box<::pest::ParserState<TRule>>) -> ::pest::ParseResult<Box<::pest::ParserState<TRule>>> {
+            fn $name(state: ::pest::ParserState<TRule>) -> ::pest::ParseResult<::pest::ParserState<TRule>> {
                 $pattern
             }
         }
@@ -36,7 +36,7 @@ macro_rules! generate_public_rule {
         quote! {
             #[inline]
             #[allow(dead_code, non_snake_case, unused_variables)]
-            pub fn $name(state: Box<::pest::ParserState<TRule>>) -> ::pest::ParseResult<Box<::pest::ParserState<TRule>>> {
+            pub fn $name(state: ::pest::ParserState<TRule>) -> ::pest::ParseResult<::pest::ParserState<TRule>> {
                 $pattern
             }
         }

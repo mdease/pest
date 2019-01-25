@@ -9,10 +9,9 @@
 
 use RuleType;
 use error::Error;
-use iterators::Pairs;
 
 /// A `trait` that defines a `Parser`.
 pub trait Parser<R: RuleType> {
     /// Parses an `&str` starting from `rule`.
-    fn parse(input: &[u8]) -> Result<Pairs<R>, Error<R>>;
+    fn parse(input: &[u8]) -> Result<usize, Error>;
 }

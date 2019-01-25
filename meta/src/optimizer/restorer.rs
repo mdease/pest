@@ -65,7 +65,6 @@ fn child_modifies_state(
     rules_to_exprs: &BTreeMap<String, OptimizedExpr>
 ) -> bool {
     expr.iter_top_down().any(|expr| match expr {
-        OptimizedExpr::Push(_) => true,
         OptimizedExpr::Ident(ref s) if s == "POP" => true,
         OptimizedExpr::Ident(ref name) => {
             let mut map = rules_to_exprs.clone();

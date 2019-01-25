@@ -7,14 +7,11 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-use alloc::vec::Vec;
 use core::cmp::Ordering;
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::ptr;
 use core::str;
-
-use byteorder::{ByteOrder, BigEndian, LittleEndian};
 
 use position;
 
@@ -154,29 +151,6 @@ impl<'i> Span<'i> {
     pub fn as_str(&self) -> &'i str {
         // Span's start and end positions are always a UTF-8 borders.
         unsafe { str::from_utf8_unchecked(&self.input[self.start..self.end]) }
-    }
-
-    /// Read from the Pair and convert the input to the type specified by the respective rule
-    ///
-    /// TODO: obviously just works for u16's right now
-    ///       make the return type general? or need one fn for each type?
-    #[inline]
-    pub fn as_type(&self) -> Vec<u16> {
-        let length = (self.end - self.start) / 2;
-        let mut nums = Vec::with_capacity(length);
-
-        for i in 0..length {
-            let start = self.start + i * 2;
-            let end = self.start + (i + 1) * 2;
-
-            nums.push(if self.little_endian {
-                LittleEndian::read_u16(&self.input[start..end])
-            } else {
-                BigEndian::read_u16(&self.input[start..end])
-            });
-        }
-
-        nums
     }
 }
 

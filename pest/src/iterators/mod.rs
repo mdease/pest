@@ -9,14 +9,6 @@
 
 //! A `mod` containing iterators and constructs to aid in parser output manipulation.
 
-mod flat_pairs;
-mod pair;
-pub(crate) mod pairs;
 mod queueable_token;
-mod tokens;
 
-pub use self::flat_pairs::FlatPairs;
-pub use self::pair::Pair;
-pub use self::pairs::Pairs;
 pub(crate) use self::queueable_token::QueueableToken;
-pub use self::tokens::Tokens;

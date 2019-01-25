@@ -64,7 +64,7 @@ pub fn generate(
                 quote! {
                     #[inline]
                     #[allow(dead_code, non_snake_case, unused_variables)]
-                    pub fn #upper_ident(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
+                    pub fn #upper_ident(state: ::pest::ParserState<#rules_enum_ident>) -> ::pest::ParseResult<::pest::ParserState<#rules_enum_ident>> {
                         state.skip(::#ident::size())
                     }
                 }
@@ -79,8 +79,8 @@ pub fn generate(
             fn parse<'i>(
                 input: &'i [u8]
             ) -> ::core::result::Result<
-                ::pest::iterators::Pairs<'i, #rules_enum_ident>,
-                ::pest::error::Error<#rules_enum_ident>
+                usize,
+                ::pest::error::Error
             > {
                 mod rules {
                     use super::#rules_enum_ident;
@@ -117,9 +117,9 @@ pub fn generate(
     let casters: Vec<Tokens> = types.iter().map(|t| {
         let t_ident = Ident::from(t.as_str());
         if defaults.contains(&t.to_uppercase().as_str()) {
-            quote!{::pest::reader::#t_ident(le, bytes)}
+            quote!{::pest::reader::#t_ident(le, offset, bytes)}
         } else {
-            quote!{#t_ident::parse_and_create(le, bytes)}
+            quote!{#t_ident::sub_parse_and_create(le, offset, bytes)}
         }
     }).collect();
 
@@ -128,7 +128,7 @@ pub fn generate(
         #parser_impl
 
         impl #name {
-            fn create(le: bool, bytes: &mut Vec<u8>) -> #name {
+            fn create(le: bool, offset: &mut usize, bytes: & [u8]) -> #name {
                 #name {
                     #(#field_idents: #casters),*,
                 }
@@ -140,10 +140,21 @@ pub fn generate(
 
             fn parse_and_create<'i>(
                 le: bool,
-                input: &'i mut Vec<u8>
+                input: &'i [u8]
             ) -> #name {
-                #name::parse(input.as_slice()).unwrap_or_else(|e| panic!("{}", e));
-                #name::create(le, input)
+                let mut offset: usize = 0;
+
+                #name::parse(input).unwrap_or_else(|e| panic!("{}", e));
+                #name::create(le, &mut offset, input)
+            }
+
+            fn sub_parse_and_create<'i>(
+                le: bool,
+                offset: &mut usize,
+                input: &'i [u8]
+            ) -> #name {
+                #name::parse(input).unwrap_or_else(|e| panic!("{}", e));
+                #name::create(le, offset, input)
             }
 
             fn validate(
@@ -152,7 +163,7 @@ pub fn generate(
                 unsafe {
                     let slice = core::slice::from_raw_parts(ptr, #name::size());
 
-                    #name::parse_and_create(true, &mut slice.to_vec());
+                    #name::parse_and_create(true, &slice);
                 }
             }
         }
@@ -174,11 +185,6 @@ fn generate_builtin_rules(rules_enum_ident: Ident) -> BTreeMap<&'static str, Tok
         );
         builtins::insert_builtin(rules_enum_ident, builtins_ref, "ANY", quote!{state.skip(1)});
         builtins::insert_builtin(rules_enum_ident, builtins_ref, "SOI", quote!{state.start_of_input()});
-        builtins::insert_builtin(rules_enum_ident, builtins_ref, "PEEK", quote!{state.stack_peek()});
-        builtins::insert_builtin(rules_enum_ident, builtins_ref, "PEEK_ALL", quote!{state.stack_match_peek()});
-        builtins::insert_builtin(rules_enum_ident, builtins_ref, "POP", quote!{state.stack_pop()});
-        builtins::insert_builtin(rules_enum_ident, builtins_ref, "POP_ALL", quote!{state.stack_match_pop()});
-        builtins::insert_builtin(rules_enum_ident, builtins_ref, "DROP", quote!{state.stack_drop()});
 
         builtins::insert_builtin(rules_enum_ident, builtins_ref, "I8", quote!{state.match_i8()});
         builtins::insert_builtin(rules_enum_ident, builtins_ref, "U8", quote!{state.match_u8()});
@@ -233,16 +239,6 @@ fn generate_builtin_rules(rules_enum_ident: Ident) -> BTreeMap<&'static str, Tok
             }
         );
         builtins::insert_builtin(rules_enum_ident, builtins_ref, "ASCII", quote!{state.match_range('\x00'..'\x7f')});
-        builtins::insert_builtin(
-            rules_enum_ident,
-            builtins_ref,
-            "NEWLINE",
-            quote! {
-                state.match_string("\n")
-                .or_else(|state| state.match_string("\r\n"))
-                .or_else(|state| state.match_string("\r"))
-            }
-        );
     }
 
     builtins
@@ -297,7 +293,7 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::Normal => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::pest::ParserState<#rules_enum_ident>) -> ::pest::ParseResult<::pest::ParserState<#rules_enum_ident>> {
                 state.rule(#rules_enum_ident::#name, |state| {
                     #expr
                 })
@@ -306,14 +302,14 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::Silent => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::pest::ParserState<#rules_enum_ident>) -> ::pest::ParseResult<::pest::ParserState<#rules_enum_ident>> {
                 #expr
             }
         },
         RuleType::Atomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::pest::ParserState<#rules_enum_ident>) -> ::pest::ParseResult<::pest::ParserState<#rules_enum_ident>> {
                 state.rule(#rules_enum_ident::#name, |state| {
                     state.atomic(::pest::Atomicity::Atomic, |state| {
                         #expr
@@ -324,7 +320,7 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::CompoundAtomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::pest::ParserState<#rules_enum_ident>) -> ::pest::ParseResult<::pest::ParserState<#rules_enum_ident>> {
                 state.atomic(::pest::Atomicity::CompoundAtomic, |state| {
                     state.rule(#rules_enum_ident::#name, |state| {
                         #expr
@@ -335,7 +331,7 @@ fn generate_rule(rules_enum_ident: Ident, rule: OptimizedRule) -> Tokens {
         RuleType::NonAtomic => quote! {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            pub fn #name(state: ::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>) -> ::pest::ParseResult<::alloc::boxed::Box<::pest::ParserState<#rules_enum_ident>>> {
+            pub fn #name(state: ::pest::ParserState<#rules_enum_ident>) -> ::pest::ParseResult<::pest::ParserState<#rules_enum_ident>> {
                 state.atomic(::pest::Atomicity::NonAtomic, |state| {
                     state.rule(#rules_enum_ident::#name, |state| {
                         #expr
@@ -408,16 +404,6 @@ fn generate_skip(rules_enum_ident: Ident, rules: &Vec<OptimizedRule>) -> Tokens 
 
 fn generate_expr(expr: OptimizedExpr) -> Tokens {
     match expr {
-        OptimizedExpr::Str(string) => {
-            quote! {
-                state.match_string(#string)
-            }
-        }
-        OptimizedExpr::Insens(string) => {
-            quote! {
-                state.match_insensitive(#string)
-            }
-        }
         OptimizedExpr::Range(start, end) => {
             let start = start.chars().next().unwrap();
             let end = end.chars().next().unwrap();
@@ -529,13 +515,6 @@ fn generate_expr(expr: OptimizedExpr) -> Tokens {
                 state.skip_until(&strings)
             }
         }
-        OptimizedExpr::Push(expr) => {
-            let expr = generate_expr(*expr);
-
-            quote! {
-                state.stack_push(|state| #expr)
-            }
-        }
         OptimizedExpr::RestoreOnErr(expr) => {
             let expr = generate_expr(*expr);
 
@@ -548,16 +527,6 @@ fn generate_expr(expr: OptimizedExpr) -> Tokens {
 
 fn generate_expr_atomic(expr: OptimizedExpr) -> Tokens {
     match expr {
-        OptimizedExpr::Str(string) => {
-            quote! {
-                state.match_string(#string)
-            }
-        }
-        OptimizedExpr::Insens(string) => {
-            quote! {
-                state.match_insensitive(#string)
-            }
-        }
         OptimizedExpr::Range(start, end) => {
             let start = start.chars().next().unwrap();
             let end = end.chars().next().unwrap();
@@ -653,13 +622,6 @@ fn generate_expr_atomic(expr: OptimizedExpr) -> Tokens {
                 let strings = [#(#strings),*];
 
                 state.skip_until(&strings)
-            }
-        }
-        OptimizedExpr::Push(expr) => {
-            let expr = generate_expr_atomic(*expr);
-
-            quote! {
-                state.stack_push(|state| #expr)
             }
         }
         OptimizedExpr::RestoreOnErr(expr) => {

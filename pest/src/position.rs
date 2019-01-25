@@ -275,53 +275,6 @@ impl<'i> Position<'i> {
         false
     }
 
-    /// Matches `string` from the `Position` and returns `true` if a match was made or `false`
-    /// otherwise. If no match was made, `pos` will not be updated.
-    #[inline]
-    pub(crate) fn match_string(&mut self, string: &str) -> bool {
-        let matched = {
-            let to = self.pos + string.len();
-
-            if to <= self.input.len() {
-                string.as_bytes() == &self.input[self.pos..to]
-            } else {
-                false
-            }
-        };
-
-        if matched {
-            self.pos += string.len();
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Case-insensitively matches `string` from the `Position` and returns `true` if a match was
-    /// made or `false` otherwise. If no match was made, `pos` will not be updated.
-    #[inline]
-    pub(crate) fn match_insensitive(&mut self, string: &str) -> bool {
-        let matched = {
-            // Matching is safe since, even if the string does not fall on UTF-8 borders, that
-            // particular slice is only used for comparison which will be handled correctly.
-            let slice = unsafe { str::from_utf8_unchecked(&self.input[self.pos..]) };
-
-            if slice.is_char_boundary(string.len()) {
-                let slice = unsafe { slice.get_unchecked(0..string.len()) };
-                slice.eq_ignore_ascii_case(string)
-            } else {
-                false
-            }
-        };
-
-        if matched {
-            self.pos += string.len();
-            true
-        } else {
-            false
-        }
-    }
-
     /// Matches a i8 (any byte)
     #[inline]
     pub(crate) fn match_i8(&mut self) -> bool {
@@ -402,24 +355,24 @@ impl<'i> Position<'i> {
         }
     }
 
-    /// Matches a isize (any eight bytes). Returns false iff there aren't eight bytes left
+    /// Matches a isize (any four bytes). Returns false iff there aren't eight bytes left
     /// TODO
     #[inline]
     pub(crate) fn match_isize(&mut self) -> bool {
-        if self.pos < self.input.len() - 7 {
-            self.pos += 8;
+        if self.pos < self.input.len() - 3 {
+            self.pos += 4;
             true
         } else {
             false
         }
     }
 
-    /// Matches a usize (any eight bytes). Returns false iff there aren't eight bytes left
+    /// Matches a usize (any four bytes). Returns false iff there aren't eight bytes left
     /// TODO
     #[inline]
     pub(crate) fn match_usize(&mut self) -> bool {
-        if self.pos < self.input.len() - 7 {
-            self.pos += 8;
+        if self.pos < self.input.len() - 3 {
+            self.pos += 4;
             true
         } else {
             false

@@ -13,15 +13,16 @@
 //     increased speed when pushing to the queue
 //   * it finds its pair in O(1) time instead of O(N), since pair positions are known at parse time
 //     and can easily be stored instead of recomputed
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum QueueableToken<R> {
+    Uninitialized {},
     Start {
-        end_token_index: usize,
-        input_pos: usize
+        end_token_index: u8,
+        input_pos: u8
     },
     End {
-        start_token_index: usize,
+        start_token_index: u8,
         rule: R,
-        input_pos: usize
+        input_pos: u8
     }
 }

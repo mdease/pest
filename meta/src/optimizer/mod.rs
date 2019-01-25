@@ -41,8 +41,6 @@ pub fn optimize(rules: Vec<Rule>) -> Vec<OptimizedRule> {
 fn rule_to_optimized_rule(rule: Rule) -> OptimizedRule {
     fn to_optimized(expr: Expr) -> OptimizedExpr {
         match expr {
-            Expr::Str(string) => OptimizedExpr::Str(string),
-            Expr::Insens(string) => OptimizedExpr::Insens(string),
             Expr::Range(start, end) => OptimizedExpr::Range(start, end),
             Expr::Ident(ident) => OptimizedExpr::Ident(ident),
             Expr::PosPred(expr) => OptimizedExpr::PosPred(Box::new(to_optimized(*expr))),
@@ -56,7 +54,6 @@ fn rule_to_optimized_rule(rule: Rule) -> OptimizedRule {
             Expr::Opt(expr) => OptimizedExpr::Opt(Box::new(to_optimized(*expr))),
             Expr::Rep(expr) => OptimizedExpr::Rep(Box::new(to_optimized(*expr))),
             Expr::Skip(strings) => OptimizedExpr::Skip(strings),
-            Expr::Push(expr) => OptimizedExpr::Push(Box::new(to_optimized(*expr))),
             _ => unreachable!("No valid transformation to OptimizedRule")
         }
     }
@@ -84,8 +81,6 @@ pub struct OptimizedRule {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum OptimizedExpr {
-    Str(String),
-    Insens(String),
     Range(String, String),
     Ident(String),
     PosPred(Box<OptimizedExpr>),
@@ -95,7 +90,6 @@ pub enum OptimizedExpr {
     Opt(Box<OptimizedExpr>),
     Rep(Box<OptimizedExpr>),
     Skip(Vec<String>),
-    Push(Box<OptimizedExpr>),
     RestoreOnErr(Box<OptimizedExpr>)
 }
 
@@ -142,10 +136,6 @@ impl OptimizedExpr {
                     let mapped = Box::new(map_internal(*expr, f));
                     OptimizedExpr::Opt(mapped)
                 }
-                OptimizedExpr::Push(expr) => {
-                    let mapped = Box::new(map_internal(*expr, f));
-                    OptimizedExpr::Push(mapped)
-                }
                 expr => expr
             }
         }
@@ -189,10 +179,6 @@ impl OptimizedExpr {
                     let mapped = Box::new(map_internal(*expr, f));
                     OptimizedExpr::Opt(mapped)
                 }
-                OptimizedExpr::Push(expr) => {
-                    let mapped = Box::new(map_internal(*expr, f));
-                    OptimizedExpr::Push(mapped)
-                }
                 expr => expr
             };
 
@@ -234,8 +220,7 @@ impl OptimizedExprTopDownIterator {
             OptimizedExpr::PosPred(expr)
             | OptimizedExpr::NegPred(expr)
             | OptimizedExpr::Rep(expr)
-            | OptimizedExpr::Opt(expr)
-            | OptimizedExpr::Push(expr) => {
+            | OptimizedExpr::Opt(expr) => {
                 self.next = Some(*expr);
             }
             _ => {
